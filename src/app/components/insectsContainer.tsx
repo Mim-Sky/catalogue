@@ -38,7 +38,7 @@ const Insects = () => {
             title={insect.title}
             latinTitle={insect.latinTitle}
             description={insect.description}
-            slug={insect.slug.current} // Pass slug correctly
+            slug={insect.slug.current} 
           />
         ))}
       </div>

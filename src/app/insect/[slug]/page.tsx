@@ -8,7 +8,6 @@ interface InsectDetailsProps {
   }>;
 }
 
-// Generate static params for dynamic routes
 export async function generateStaticParams() {
   const insects = await client.fetch<Insect[]>(
     `*[_type == "insect"]{ slug }`
@@ -19,11 +18,8 @@ export async function generateStaticParams() {
   }));
 }
 
-// Page Component
 const InsectDetails = async ({ params }: InsectDetailsProps) => {
-  // Await params to resolve the slug
   const { slug } = await params;
-
   if (!slug) {
     return <div>Invalid route</div>;
   }

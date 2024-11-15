@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface CardProps {
-  imageUrl: string; // Adjust this type if imageUrl can be a URL object or null
+  imageUrl: string | null; 
   title: string;
   latinTitle: string;
   description: string;

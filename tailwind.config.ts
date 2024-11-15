@@ -11,6 +11,12 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        glacialBlue: '#A2DDF5',
+        mossGreen: '#8AB83D',
+        earthBrown: '#765C48',
+        goldenYellow: '#FFD166',
+        softGrey: '#F5F5F5',
+        charcoal: '#333333',
       },
     },
   },

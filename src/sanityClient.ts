@@ -6,7 +6,7 @@ const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "o6fq908b",
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",    
   apiVersion: "2023-11-15",                            
-  useCdn: true,                                        
+  useCdn: process.env.NODE_ENV === "production",                                    
 });
 
 const builder = imageUrlBuilder(client);

@@ -1,4 +1,4 @@
-export default {
+const insectsSchema = {
     name: "insect",
     title: "Insect",
     type: "document",
@@ -10,3 +10,5 @@ export default {
       { name: "image", title: "Image", type: "image", options: { hotspot: true } },
     ],
   };
+
+  export default insectsSchema;

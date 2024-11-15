@@ -33,7 +33,7 @@ const Insects = () => {
             imageUrl={
               insect.image
                 ? urlFor(insect.image).width(330).height(330).url()
-                : null
+                : "/zombie.webp"
             }
             title={insect.title}
             latinTitle={insect.latinTitle}

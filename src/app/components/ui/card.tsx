@@ -1,8 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
+interface CardProps {
+  imageUrl: string; // Adjust this type if imageUrl can be a URL object or null
+  title: string;
+  latinTitle: string;
+  description: string;
+  slug: string;
+}
 
-const Card = ({ imageUrl, title, latinTitle, description, slug }) => {
+const Card = ({ imageUrl, title, latinTitle, description, slug }: CardProps) => {
   return (
     <div className="rounded overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-glacialBlue/20">
       <div className="relative">

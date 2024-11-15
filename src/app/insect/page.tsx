@@ -1,16 +1,4 @@
-import { createClient } from 'contentful';
-import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
-import { BsClock } from "react-icons/bs";
-import { LuMountain } from "react-icons/lu";
-import { BsGraphUpArrow } from "react-icons/bs";
-import { HiKey } from "react-icons/hi";
-import { GiPathDistance } from "react-icons/gi"
-import { IoNavigateCircle } from "react-icons/io5";
-import { FaMapPin } from "react-icons/fa";
-import { IoMapSharp } from "react-icons/io5";
 
-import Link from 'next/link';
-import InsectDetails from '../components/insectDetails';
 
 // const client = createClient({
 //   space: process.env.CONTENTFUL_SPACE_ID,

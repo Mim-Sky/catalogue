@@ -1,15 +1,12 @@
 'use client'
 
-import React, { useState } from "react";
+import React from "react";
 import { BsClock } from "react-icons/bs";
 import { LuMountain } from "react-icons/lu";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { HiKey } from "react-icons/hi";
 import { GiPathDistance } from "react-icons/gi"
-import { IoNavigateCircle } from "react-icons/io5";
-import { FaMapPin } from "react-icons/fa";
-import { IoMapSharp } from "react-icons/io5";
-import Link from 'next/link';
+
 
 
 const InsectDetails = () => {

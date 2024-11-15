@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import DesktopLink from './ui/desktopLink';
-import Link from 'next/link';
 import MobileLink from './ui/mobileLink';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai'
 

@@ -3,6 +3,7 @@ export interface Insect {
   title: string; // Common name of the insect
   latinTitle: string; // Scientific name
   description: string; // Description of the insect
+  shortDescription: string; //short description
   image: {
     asset: {
       _ref: string; // Reference to the image asset in Sanity

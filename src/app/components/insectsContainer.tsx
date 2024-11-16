@@ -15,7 +15,7 @@ const Insects = () => {
           _id,
           title,
           latinTitle,
-          description,
+          shortDescription,
           image,
           slug
         }`
@@ -37,7 +37,7 @@ const Insects = () => {
             }
             title={insect.title}
             latinTitle={insect.latinTitle}
-            description={insect.description}
+            shortDescription={insect.shortDescription}
             slug={insect.slug.current} 
           />
         ))}

@@ -5,9 +5,22 @@ const insectsSchema = {
     fields: [
       { name: "title", title: "Title", type: "string" },
       { name: "latinTitle", title: "Latin Title", type: "string" },
+      { name: "shortDescription", title: "Short description", type: "text" },
       { name: "description", title: "Description", type: "text" },
       { name: "slug", title: "Slug", type: "slug", options: { source: "title" } },
       { name: "image", title: "Image", type: "image", options: { hotspot: true } },
+      {
+        name: "class",
+        title: "Class",
+        type: "reference",
+        to: [{ type:"class" }]
+      },
+      {
+        name: "order",
+        tytle: "Order",
+        type: "reference",
+        to: [{ type: "order" }]
+      }
     ],
   };
 

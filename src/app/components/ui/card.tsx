@@ -5,11 +5,11 @@ interface CardProps {
   imageUrl: string; 
   title: string;
   latinTitle: string;
-  description: string;
+  shortDescription: string;
   slug: string;
 }
 
-const Card = ({ imageUrl, title, latinTitle, description, slug }: CardProps) => {
+const Card = ({ imageUrl, title, latinTitle, shortDescription, slug }: CardProps) => {
   return (
     <div className="rounded overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-glacialBlue/20">
       <div className="relative">
@@ -29,9 +29,9 @@ const Card = ({ imageUrl, title, latinTitle, description, slug }: CardProps) => 
           className="font-semibold text-lg inline-block transition duration-500 ease-in-out"
         >
           <h1>{title}</h1>
-          <h2>{latinTitle}</h2>
+          <h3 className="font-light font-style: italic">{latinTitle}</h3>
         </Link>
-        <p className="text-gray-500 text-sm">{description}</p>
+        <p className="text-gray-500 text-sm">{shortDescription}</p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import client, { urlFor } from "@/sanityClient";
 import Card from "./ui/card";
 import { Insect } from "@/sanity/types/types";
+import Dropdown from "./filters";
 
 const Insects = () => {
   const [insects, setInsects] = useState<Insect[]>([]);
@@ -25,9 +26,14 @@ const Insects = () => {
   }, []);
 
   return (
+
+    <>
+    <Dropdown />
     <div className="max-w-screen-2xl mx-auto p-5 sm:p-10 md:p-16">
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
         {insects.map((insect) => (
+          
           <Card
             key={insect._id}
             imageUrl={
@@ -43,6 +49,8 @@ const Insects = () => {
         ))}
       </div>
     </div>
+
+    </>
   );
 };
 

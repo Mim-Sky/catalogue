@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import client from "@/sanityClient";
+import { Button } from "flowbite-react";
 
 interface ClassData {
   _id: string;
@@ -40,6 +41,7 @@ const Dropdown = () => {
 
   return (
     <div className="relative inline-block text-left">
+      <Button>Click me</Button>
       <button
         onClick={toggleDropdown}
         className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none"

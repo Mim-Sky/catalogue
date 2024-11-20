@@ -12,6 +12,7 @@ export interface Insect {
   slug: {
     current: string; // Slug for the insect's detail page
   };
+  order: string;
 }
 
 

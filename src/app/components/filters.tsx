@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import client from "@/sanityClient";
 
@@ -6,10 +8,13 @@ interface ClassData {
   name: string;
 }
 
-const Dropdown = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface FiltersProps {
+  onFilterChange: (selectedOrders: string[]) => void;
+}
+const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [orders, setOrders] = useState<ClassData[]>([]);
+  const [insectOrders, setInsectOrders] = useState<ClassData[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -17,39 +22,37 @@ const Dropdown = () => {
         const data = await client.fetch(
           `*[_type == "order"]{_id, name}`
         );
-        setOrders(data);
+        setInsectOrders(data);
       } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching insect orders:", error);
       }
     };
-
     fetchOrders();
   }, []);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
-
   const handleCheckboxChange = (className: string) => {
-    setSelectedOrders((prev) =>
-      prev.includes(className)
-        ? prev.filter((item) => item !== className)
-        : [...prev, className]
-    );
+    const updatedOrders = selectedOrders.includes(className)
+      ? selectedOrders.filter((item) => item !== className)
+      : [...selectedOrders, className];
+    setSelectedOrders(updatedOrders);
+    onFilterChange(updatedOrders); 
   };
-
   return (
     <div className="relative inline-block text-left">
       <button
         onClick={toggleDropdown}
         className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none"
       >
-        Filter by Order
+        Filter by insect order ({selectedOrders.length})
       </button>
+
       {isOpen && (
-        <div className="absolute z-10 w-64 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg top-full left-0">
-          <div className="max-h-40 overflow-y-auto p-2">
-            {orders.map((cls) => (
+        <div className="absolute w-64 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg">
+          <div className="p-2">
+            {insectOrders.map((cls) => (
               <label
                 key={cls._id}
                 className="flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100"
@@ -70,4 +73,4 @@ const Dropdown = () => {
   );
 };
 
-export default Dropdown;
+export default Filters;

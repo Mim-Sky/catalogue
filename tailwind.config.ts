@@ -14,24 +14,22 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        glacialBlue: '#A2DDF5',
-        mossGreen: '#8AB83D',
-        earthBrown: '#765C48',
-        goldenYellow: '#FFD166',
-        softGrey: '#F5F5F5',
-        charcoal: '#333333',
+        glacialBlue: "#A2DDF5",
+        mossGreen: "#8AB83D",
+        earthBrown: "#765C48",
+        goldenYellow: "#FFD166",
+        softGrey: "#F5F5F5",
+        charcoal: "#333333",
       },
-      
     },
-   
-  },  
+  },
   plugins: [
     flowbite.plugin(),
-    plugin(function ({ addComponents }: { addComponents: (components: Record<string, any>) => void }) {
-      addComponents({
-        'button:focus-': {
-          outline: 'none',
-          ring: '0',
+    plugin(function ({ addBase }) {
+      addBase({
+        "button:focus": {
+          outline: "none",
+          boxShadow: "none",
         },
       });
     }),

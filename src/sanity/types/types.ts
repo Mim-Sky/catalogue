@@ -1,5 +1,4 @@
 export interface Insect {
-  class: string;
   _id: string; // Unique identifier for each insect document
   title: string; // Common name of the insect
   latinTitle: string; // Scientific name
@@ -28,5 +27,5 @@ export interface Insect {
   }
 
   export interface FiltersProps {
-    onFilterChange: (selectedOrders: string[], selectedClass: string | null) => void; // Callback for filter changes
+    onFilterChange: (selectedOrders: string[]) => void; // Callback for filter changes
   }

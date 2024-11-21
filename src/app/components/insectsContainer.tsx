@@ -60,11 +60,9 @@ const Insects = () => {
     fetchInitialData();
   }, []);
 
-  // Handle filter changes
   const handleFilterChange = async (orders: string[], cls: string | null) => {
     setSelectedOrders(orders);
     setSelectedClass(cls);
-
 
     const params = new URLSearchParams();
     if (cls) params.set("class", cls);
@@ -112,9 +110,9 @@ const Insects = () => {
     <div className="max-w-screen-2xl mx-auto p-5 sm:p-10 md:p-16">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
         {/* Filters Column */}
-        <div className="lg:col-span-1 bg-white border rounded-lg p-4 shadow-lg sticky top-4">
-          <Filters onFilterChange={handleFilterChange} />
-        </div>
+        
+          <Filters  onFilterChange={handleFilterChange} />
+        
 
         {/* Cards Column */}
         <div className="lg:col-span-3">

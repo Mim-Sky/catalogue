@@ -11,69 +11,112 @@ interface ClassData {
 }
 
 interface FiltersProps {
-  onFilterChange: (selectedOrders: string[]) => void;
+  onFilterChange: (selectedOrders: string[], selectedClass: string | null) => void;
 }
 
 const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [insectOrders, setInsectOrders] = useState<ClassData[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [orders, setOrders] = useState<ClassData[]>([]);
 
+  // Parse URL parameters on mount and update the state
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const data = await client.fetch<ClassData[]>(`*[_type == "order"]{_id, name}`);
-        setInsectOrders(data);
-      } catch (error) {
-        console.error("Error fetching insect orders:", error);
-      }
-    };
-    fetchOrders();
+    const params = new URLSearchParams(window.location.search);
+    const classParam = params.get("class");
+    const ordersParam = params.get("orders");
+
+    setSelectedClass(classParam || null);
+    setSelectedOrders(ordersParam ? ordersParam.split(",") : []);
   }, []);
 
-  const handleButtonClick = (order: string) => {
-    const updatedOrders =
-      order === "All"
-        ? [] // Clear all filters
-        : selectedOrders.includes(order)
-        ? selectedOrders.filter((item) => item !== order) // Remove order
-        : [...selectedOrders, order]; // Add order
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const classesData = await client.fetch<ClassData[]>(`*[_type == "class"]{_id, name}`);
+        setClasses(classesData);
 
-    setSelectedOrders(updatedOrders);
-    onFilterChange(updatedOrders); // Notify parent component
+        const ordersData = await client.fetch<ClassData[]>(`*[_type == "order"]{_id, name}`);
+        setOrders(ordersData);
+      } catch (error) {
+        console.error("Error fetching filters:", error);
+      }
+    };
+
+    fetchFilters();
+  }, []);
+
+  const handleClassClick = (cls: string | null) => {
+    setSelectedClass(cls);
+    setSelectedOrders([]);
+    onFilterChange([], cls);
+  };
+
+  const handleOrderClick = (order: string) => {
+    if (order === "All") {
+      setSelectedOrders([]);
+      setSelectedClass(null);
+      onFilterChange([], null);
+    } else {
+      const updatedOrders = selectedOrders.includes(order)
+        ? selectedOrders.filter((item) => item !== order)
+        : [...selectedOrders, order];
+
+      setSelectedOrders(updatedOrders);
+      onFilterChange(updatedOrders, selectedClass);
+    }
   };
 
   return (
-    <div className="flex flex-wrap gap-2 mt-4">
-<Button
-        onClick={() => handleButtonClick("All")}
-        className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0 ${
-          selectedOrders.length === 0
-            ? "bg-blue-500 text-white hover:bg-blue-600"
-            : "bg-red-500 text-white hover:bg-red-600"
-        }`}
-      >
-        {selectedOrders.length === 0 ? (
-          "All"
-        ) : (
-          <div className="flex items-center">
-            <FaTimes className="mr-2" />
-            Clear Filters
-          </div>
-        )}
-      </Button>
-      {insectOrders.map((cls) => (
+    <div>
+      <div className="flex gap-2 border-b-2 pb-2">
+        {classes.map((cls) => (
+          <Button
+            key={cls._id}
+            onClick={() => handleClassClick(cls.name)}
+            className={`px-4 py-2 rounded-lg ${
+              selectedClass === cls.name
+                ? "bg-blue-500 text-white"
+                : "bg-white text-blue-500 border border-blue-500"
+            }`}
+          >
+            {cls.name}
+          </Button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-4">
         <Button
-          key={cls._id}
-          onClick={() => handleButtonClick(cls.name)}
-          className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0 ${
-            selectedOrders.includes(cls.name)
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border border-blue-500"
+          onClick={() => handleOrderClick("All")}
+          className={`px-4 py-2 rounded-lg ${
+            selectedOrders.length === 0 && !selectedClass
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "bg-red-500 text-white hover:bg-red-600"
           }`}
         >
-          {cls.name}
+          {selectedOrders.length === 0 && !selectedClass ? (
+            "All"
+          ) : (
+            <div className="flex items-center">
+              <FaTimes className="mr-2" />
+              Clear Filters
+            </div>
+          )}
         </Button>
-      ))}
+        {orders.map((order) => (
+          <Button
+            key={order._id}
+            onClick={() => handleOrderClick(order.name)}
+            className={`px-4 py-2 rounded-lg ${
+              selectedOrders.includes(order.name)
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-white text-blue-500 border border-blue-500 hover:bg-gray-100"
+            }`}
+          >
+            {order.name}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };

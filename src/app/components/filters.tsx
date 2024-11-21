@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import client from "@/sanityClient";
+import { Button } from "flowbite-react";
+import { FaTimes } from "react-icons/fa";
 
 interface ClassData {
   _id: string;
@@ -11,17 +13,15 @@ interface ClassData {
 interface FiltersProps {
   onFilterChange: (selectedOrders: string[]) => void;
 }
+
 const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [insectOrders, setInsectOrders] = useState<ClassData[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const data = await client.fetch(
-          `*[_type == "order"]{_id, name}`
-        );
+        const data = await client.fetch<ClassData[]>(`*[_type == "order"]{_id, name}`);
         setInsectOrders(data);
       } catch (error) {
         console.error("Error fetching insect orders:", error);
@@ -30,45 +30,50 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
     fetchOrders();
   }, []);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-  const handleCheckboxChange = (className: string) => {
-    const updatedOrders = selectedOrders.includes(className)
-      ? selectedOrders.filter((item) => item !== className)
-      : [...selectedOrders, className];
-    setSelectedOrders(updatedOrders);
-    onFilterChange(updatedOrders); 
-  };
-  return (
-    <div className="relative inline-block text-left">
-      <button
-        onClick={toggleDropdown}
-        className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none"
-      >
-        Filter by insect order ({selectedOrders.length})
-      </button>
+  const handleButtonClick = (order: string) => {
+    const updatedOrders =
+      order === "All"
+        ? [] // Clear all filters
+        : selectedOrders.includes(order)
+        ? selectedOrders.filter((item) => item !== order) // Remove order
+        : [...selectedOrders, order]; // Add order
 
-      {isOpen && (
-        <div className="absolute w-64 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg">
-          <div className="p-2">
-            {insectOrders.map((cls) => (
-              <label
-                key={cls._id}
-                className="flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedOrders.includes(cls.name)}
-                  onChange={() => handleCheckboxChange(cls.name)}
-                  className="mr-2"
-                />
-                {cls.name}
-              </label>
-            ))}
+    setSelectedOrders(updatedOrders);
+    onFilterChange(updatedOrders); // Notify parent component
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-4">
+<Button
+        onClick={() => handleButtonClick("All")}
+        className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0 ${
+          selectedOrders.length === 0
+            ? "bg-blue-500 text-white hover:bg-blue-600"
+            : "bg-red-500 text-white hover:bg-red-600"
+        }`}
+      >
+        {selectedOrders.length === 0 ? (
+          "All"
+        ) : (
+          <div className="flex items-center">
+            <FaTimes className="mr-2" />
+            Clear Filters
           </div>
-        </div>
-      )}
+        )}
+      </Button>
+      {insectOrders.map((cls) => (
+        <Button
+          key={cls._id}
+          onClick={() => handleButtonClick(cls.name)}
+          className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0 ${
+            selectedOrders.includes(cls.name)
+              ? "bg-blue-500 text-white"
+              : "bg-white text-blue-500 border border-blue-500"
+          }`}
+        >
+          {cls.name}
+        </Button>
+      ))}
     </div>
   );
 };

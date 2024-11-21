@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import flowbite from "flowbite-react/tailwind";
+import plugin from "tailwindcss/plugin";
 
 export default {
   content: [
@@ -20,9 +21,19 @@ export default {
         softGrey: '#F5F5F5',
         charcoal: '#333333',
       },
+      
     },
-  },
+   
+  },  
   plugins: [
     flowbite.plugin(),
+    plugin(function ({ addComponents }: { addComponents: (components: Record<string, any>) => void }) {
+      addComponents({
+        'button:focus-': {
+          outline: 'none',
+          ring: '0',
+        },
+      });
+    }),
   ],
 } satisfies Config;

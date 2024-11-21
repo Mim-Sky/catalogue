@@ -12,7 +12,7 @@ export interface Insect {
   slug: {
     current: string; // Slug for the insect's detail page
   };
-  order: string;
+  order: string;  
 }
 
 
@@ -24,4 +24,8 @@ export interface Insect {
         _ref: string;
       };
     };
+  }
+
+  export interface FiltersProps {
+    onFilterChange: (selectedOrders: string[]) => void; // Callback for filter changes
   }

@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import client from "@/sanityClient";
-import { Button } from "flowbite-react";
+import { AccordionContent, AccordionPanel, Button } from "flowbite-react";
 import { FaTimes } from "react-icons/fa";
+import { Accordion } from "flowbite-react";
 
 interface ClassData {
   _id: string;
@@ -68,30 +69,41 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   };
 
   return (
-    <div>
-      <div className="flex gap-2 border-b-2 pb-2">
+    
+    <Accordion>
+      <AccordionPanel>
+      <Accordion.Title>Filters</Accordion.Title>
+      <AccordionContent>
+    
+      {/* Class Filters */}
+      <h1>Choose class</h1>
+      <div className="flex justify-between">
         {classes.map((cls) => (
           <Button
             key={cls._id}
             onClick={() => handleClassClick(cls.name)}
-            className={`px-4 py-2 rounded-lg ${
+            color="light"
+            className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
               selectedClass === cls.name
-                ? "bg-blue-500 text-white"
-                : "bg-white text-blue-500 border border-blue-500"
+                ? "!bg-blue-500 !text-white hover:!bg-blue-400 hover:!text-white"
+                : "!bg-white !text-blue-500 !border !border-blue-500 hover:!bg-blue-100 hover:!text-blue-700"
             }`}
           >
             {cls.name}
           </Button>
         ))}
       </div>
-
+      <h1>Choose order</h1>
+      {/* Order Filters */}
       <div className="flex flex-wrap gap-2 mt-4">
+        {/* "All" or "Clear Filters" Button */}
         <Button
           onClick={() => handleOrderClick("All")}
-          className={`px-4 py-2 rounded-lg ${
+          color={selectedOrders.length === 0 && !selectedClass ? "blue" : "red"}
+          className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
             selectedOrders.length === 0 && !selectedClass
-              ? "bg-blue-500 text-white hover:bg-blue-600"
-              : "bg-red-500 text-white hover:bg-red-600"
+              ? "hover:!bg-blue-600 hover:!text-white"
+              : "!bg-red-500 !text-white hover:!bg-red-400 hover:!text-white"
           }`}
         >
           {selectedOrders.length === 0 && !selectedClass ? (
@@ -103,21 +115,27 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
             </div>
           )}
         </Button>
+
+        {/* Individual Order Buttons */}
         {orders.map((order) => (
           <Button
             key={order._id}
             onClick={() => handleOrderClick(order.name)}
-            className={`px-4 py-2 rounded-lg ${
+            color="light"
+            className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
               selectedOrders.includes(order.name)
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-white text-blue-500 border border-blue-500 hover:bg-gray-100"
+                ? "!bg-blue-500 !text-white hover:!bg-blue-400 hover:!text-white"
+                : "!bg-white !text-blue-500 !border !border-blue-500 hover:!bg-blue-100 hover:!text-blue-700"
             }`}
           >
             {order.name}
           </Button>
         ))}
       </div>
-    </div>
+    
+    </AccordionContent>
+    </AccordionPanel>
+    </Accordion>
   );
 };
 

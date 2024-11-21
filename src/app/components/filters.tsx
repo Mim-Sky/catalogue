@@ -5,7 +5,6 @@ import { FiltersProps } from "@/sanity/types/types";
 import client from "@/sanityClient";
 import { Button } from "flowbite-react";
 import { FaTimes } from "react-icons/fa";
-import { useSearchParams } from "next/navigation";
 
 interface ClassData {
   _id: string;
@@ -17,13 +16,26 @@ interface OrderData {
   name: string;
 }
 
+// Custom hook to parse search parameters
+const useSearchParamsFallback = () => {
+  const [params, setParams] = useState<URLSearchParams>(new URLSearchParams());
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setParams(new URLSearchParams(window.location.search));
+    }
+  }, []);
+
+  return params;
+};
+
 const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [orders, setOrders] = useState<OrderData[]>([]);
 
-  const searchParams = useSearchParams(); // Access URL parameters
+  const searchParams = useSearchParamsFallback(); // Use fallback for URL parameters
 
   // Synchronise state with URL parameters
   useEffect(() => {
@@ -66,26 +78,25 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
   };
 
   const handleClassClick = (cls: string | null) => {
-    setSelectedClass(cls); 
-    setSelectedOrders([]); 
-    fetchOrders(cls); 
-    onFilterChange([], cls); 
+    setSelectedClass(cls);
+    setSelectedOrders([]);
+    fetchOrders(cls);
+    onFilterChange([], cls);
   };
 
   const handleOrderClick = (order: string) => {
     if (order === "All") {
       setSelectedClass(null);
-      setSelectedOrders([]); 
-      fetchOrders(null); 
-      onFilterChange([], null); 
+      setSelectedOrders([]);
+      fetchOrders(null);
+      onFilterChange([], null);
     } else {
-      const updatedOrders =
-        selectedOrders.includes(order)
-          ? selectedOrders.filter((item) => item !== order) 
-          : [...selectedOrders, order]; 
+      const updatedOrders = selectedOrders.includes(order)
+        ? selectedOrders.filter((item) => item !== order)
+        : [...selectedOrders, order];
 
       setSelectedOrders(updatedOrders);
-      onFilterChange(updatedOrders, selectedClass); 
+      onFilterChange(updatedOrders, selectedClass);
     }
   };
 
@@ -97,7 +108,7 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
           <Button
             key={cls._id}
             onClick={() => handleClassClick(cls.name)}
-            className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0  ${
+            className={`px-4 py-2 rounded-lg focus:outline-none focus:ring-0 ${
               selectedClass === cls.name
                 ? "bg-blue-500 text-white"
                 : "bg-white text-blue-500 border border-blue-500"

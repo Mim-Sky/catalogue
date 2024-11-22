@@ -1,126 +1,117 @@
 'use client';
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setAllInsects,
+  addInsects,
+  setVisibleInsects,
+  setLoading,
+  setHasMore,
+  updateFilters,
+} from "../redux/insectsSlice";
 import client, { urlFor } from "@/sanityClient";
 import Card from "./ui/card";
-import { Insect } from "@/sanity/types/types";
 import Filters from "./filters";
+import { RootState } from "../redux/store";
 
 const Insects = () => {
-  const [allInsects, setAllInsects] = useState<Insect[]>([]); 
-  const [visibleInsects, setVisibleInsects] = useState<Insect[]>([]);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { allInsects, visibleInsects, filters, hasMore, loading } = useSelector(
+    (state: RootState) => state.insects
+  );
 
-  const fetchInsects = async (
-    offset: number = 0,
-    limit: number = 20,
-    filterOrders: string[] = [],
-    filterClass: string | null = null
-  ): Promise<Insect[]> => {
-    const orderFilter = filterOrders.length
-      ? `&& order->name in [${filterOrders.map((o) => `"${o}"`).join(",")}]`
-      : "";
-    const classFilter = filterClass ? `&& class->name == "${filterClass}"` : "";
+  const fetchInsects = async (offset = 0, limit = 20) => {
     const range = `[${offset}...${offset + limit}]`;
-
-    const query = `*[_type == "insect" ${classFilter} ${orderFilter}] | order(title asc) ${range} {
+    const query = `*[_type == "insect"] | order(title asc) {
       _id,
       title,
       latinTitle,
       shortDescription,
-      image,
-      slug,
-      "class": class->name,
-      "order": order->name
+      description,
+      image {
+        asset {
+          _ref
+        }
+      },
+      "slug": slug.current,
+      "order": order->name,
+      "class": order->class->name
     }`;
 
-    return client.fetch<Insect[]>(query);
+    return client.fetch(query);
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const classParam = params.get("class");
-    const ordersParam = params.get("orders");
-
-    setSelectedClass(classParam || null);
-    setSelectedOrders(ordersParam ? ordersParam.split(",") : []);
-
-    const fetchInitialData = async () => {
-      setLoading(true);
-      const initialData = await fetchInsects(0, 20);
-      setAllInsects(initialData); 
-      setVisibleInsects(initialData);
-      setHasMore(initialData.length === 20);
-      setLoading(false);
-    };
-
-    fetchInitialData();
-  }, []);
-
-  const handleFilterChange = async (orders: string[], cls: string | null) => {
-    setSelectedOrders(orders);
-    setSelectedClass(cls);
-
-    const params = new URLSearchParams();
-    if (cls) params.set("class", cls);
-    if (orders.length > 0) params.set("orders", orders.join(","));
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", newUrl);
+  const applyFilters = () => {
+    const { selectedClass, selectedOrders } = filters;
 
     const filteredData = allInsects.filter(
-      (insect) =>
-        (!cls || insect.class === cls) &&
-        (orders.length === 0 || orders.includes(insect.order))
-    );
-
-    setVisibleInsects(filteredData);
-
-    if (filteredData.length === 0) {
-      setLoading(true);
-      const additionalData = await fetchInsects(0, 20, orders, cls);
-      setAllInsects((prev) => [...prev, ...additionalData]);
-      setVisibleInsects((prev) => [...prev, ...additionalData]);
-      setLoading(false);
-    }
-  };
-
-  const handleShowMore = async () => {
-    if (!hasMore || loading) return;
-
-    setLoading(true);
-    const additionalData = await fetchInsects(allInsects.length, 20);
-    setAllInsects((prev) => [...prev, ...additionalData]);
-    setVisibleInsects((prev) => [...prev, ...additionalData]);
-    setHasMore(additionalData.length === 20);
-    setLoading(false);
-  };
-
-  const filteredInsects = useMemo(() => {
-    return visibleInsects.filter(
       (insect) =>
         (!selectedClass || insect.class === selectedClass) &&
         (selectedOrders.length === 0 || selectedOrders.includes(insect.order))
     );
-  }, [visibleInsects, selectedClass, selectedOrders]);
+
+    dispatch(setVisibleInsects(filteredData));
+  };
+
+  useEffect(() => {
+    // Synchronize filters with the URL on load
+    const params = new URLSearchParams(window.location.search);
+    const classParam = params.get("class") || "Insects"; // Default to "Insects"
+    const ordersParam = params.get("orders");
+
+    dispatch(
+      updateFilters({
+        selectedClass: classParam,
+        selectedOrders: ordersParam ? ordersParam.split(",") : [],
+      })
+    );
+
+    const fetchInitialData = async () => {
+      dispatch(setLoading(true));
+      const initialData = await fetchInsects(0, 20);
+      dispatch(setAllInsects(initialData));
+      dispatch(setVisibleInsects(initialData));
+      dispatch(setHasMore(initialData.length === 20));
+      dispatch(setLoading(false));
+    };
+
+    fetchInitialData();
+  }, [dispatch]);
+
+  useEffect(() => {
+    applyFilters();
+
+    // Update the URL when filters change
+    const params = new URLSearchParams();
+    if (filters.selectedClass) params.set("class", filters.selectedClass);
+    if (filters.selectedOrders.length > 0) params.set("orders", filters.selectedOrders.join(","));
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [filters, allInsects]);
+
+  const handleShowMore = async () => {
+    if (!hasMore || loading) return;
+
+    dispatch(setLoading(true));
+    const moreData = await fetchInsects(allInsects.length, 20);
+    dispatch(addInsects(moreData));
+    dispatch(setHasMore(moreData.length === 20));
+    dispatch(setLoading(false));
+  };
 
   return (
     <div className="max-w-screen-2xl mx-auto p-5 sm:p-10 md:p-16">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-        {/* Filters Column */}
-        
-          <Filters  onFilterChange={handleFilterChange} />
-        
-
-        {/* Cards Column */}
+        <div className="lg:col-span-1 bg-white border rounded-lg p-4 shadow-lg sticky top-4">
+          <Filters />
+        </div>
         <div className="lg:col-span-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading ? (
               <p>Loading...</p>
             ) : (
-              filteredInsects.map((insect) => (
+              visibleInsects.map((insect) => (
                 <Card
                   key={insect._id}
                   imageUrl={
@@ -131,14 +122,12 @@ const Insects = () => {
                   title={insect.title}
                   latinTitle={insect.latinTitle}
                   shortDescription={insect.shortDescription}
-                  slug={insect.slug.current}
+                  slug={insect.slug}
                 />
               ))
             )}
           </div>
-
-          {/* Show More Button */}
-          {hasMore && !loading && (
+          {hasMore && (
             <button
               onClick={handleShowMore}
               className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"

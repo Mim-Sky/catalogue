@@ -22,6 +22,12 @@ export default {
       type: "reference",
       to: [{ type: "order" }],
     },
+    {
+      name: "class",
+      title: "Class",
+      type: "reference",
+      to: [{ type: "class" }],
+    },
     { name: "image", title: "Image", type: "image", options: { hotspot: true } },
   ],
 };

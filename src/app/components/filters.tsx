@@ -1,112 +1,102 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateFilters } from "../redux/insectsSlice";
 import client from "@/sanityClient";
-import { AccordionContent, AccordionPanel, Button } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { FaTimes } from "react-icons/fa";
-import { Accordion } from "flowbite-react";
+import { RootState } from "../redux/store";
 
-interface ClassData {
-  _id: string;
-  name: string;
-}
+const Filters = () => {
+  const dispatch = useDispatch();
+  const { selectedClass, selectedOrders } = useSelector(
+    (state: RootState) => state.insects.filters
+  );
 
-interface FiltersProps {
-  onFilterChange: (selectedOrders: string[], selectedClass: string | null) => void;
-}
-
-const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [classes, setClasses] = useState<ClassData[]>([]);
-  const [orders, setOrders] = useState<ClassData[]>([]);
-
-  // Parse URL parameters on mount and update the state
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const classParam = params.get("class");
-    const ordersParam = params.get("orders");
-
-    setSelectedClass(classParam || null);
-    setSelectedOrders(ordersParam ? ordersParam.split(",") : []);
-  }, []);
+  const [availableClasses, setAvailableClasses] = useState<{ name: string }[]>([]);
+  const [availableOrders, setAvailableOrders] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchFilters = async () => {
+    const fetchClasses = async () => {
       try {
-        const classesData = await client.fetch<ClassData[]>(`*[_type == "class"]{_id, name}`);
-        setClasses(classesData);
+        const classesData = await client.fetch(`*[_type == "class"]{name}`);
+        setAvailableClasses(classesData);
 
-        const ordersData = await client.fetch<ClassData[]>(`*[_type == "order"]{_id, name}`);
-        setOrders(ordersData);
+        if (!selectedClass) {
+          dispatch(updateFilters({ selectedClass: "Insects", selectedOrders: [] }));
+        }
       } catch (error) {
-        console.error("Error fetching filters:", error);
+        console.error("Error fetching classes:", error);
       }
     };
 
-    fetchFilters();
-  }, []);
+    fetchClasses();
+  }, [dispatch, selectedClass]);
 
-  const handleClassClick = (cls: string | null) => {
-    setSelectedClass(cls);
-    setSelectedOrders([]);
-    onFilterChange([], cls);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!selectedClass) return;
+
+      try {
+        const ordersData = await client.fetch(
+          `*[_type == "order" && references(*[_type == "class" && name == "${selectedClass}"]._id)]{
+            name
+          }`
+        );
+        setAvailableOrders(ordersData.map((order: { name: string }) => order.name));
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, [selectedClass]);
+
+  const handleClassClick = (cls: string) => {
+    dispatch(updateFilters({ selectedClass: cls, selectedOrders: [] }));
   };
 
   const handleOrderClick = (order: string) => {
     if (order === "All") {
-      setSelectedOrders([]);
-      setSelectedClass(null);
-      onFilterChange([], null);
+      dispatch(updateFilters({ selectedClass, selectedOrders: [] }));
     } else {
       const updatedOrders = selectedOrders.includes(order)
-        ? selectedOrders.filter((item) => item !== order)
+        ? selectedOrders.filter((o) => o !== order)
         : [...selectedOrders, order];
 
-      setSelectedOrders(updatedOrders);
-      onFilterChange(updatedOrders, selectedClass);
+      dispatch(updateFilters({ selectedClass, selectedOrders: updatedOrders }));
     }
   };
 
   return (
-    
-    <Accordion>
-      <AccordionPanel>
-      <Accordion.Title>Filters</Accordion.Title>
-      <AccordionContent>
-    
-      {/* Class Filters */}
-      <h1>Choose class</h1>
-      <div className="flex justify-between">
-        {classes.map((cls) => (
+    <div>
+      <div className="flex gap-2 border-b-2 pb-2">
+        {availableClasses.map((cls) => (
           <Button
-            key={cls._id}
+            key={cls.name}
             onClick={() => handleClassClick(cls.name)}
-            color="light"
-            className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
+            className={`px-4 py-2 rounded-lg ${
               selectedClass === cls.name
-                ? "!bg-blue-500 !text-white hover:!bg-blue-400 hover:!text-white"
-                : "!bg-white !text-blue-500 !border !border-blue-500 hover:!bg-blue-100 hover:!text-blue-700"
+                ? "bg-blue-500 text-white"
+                : "bg-white text-blue-500 border border-blue-500"
             }`}
           >
             {cls.name}
           </Button>
         ))}
       </div>
-      <h1>Choose order</h1>
-      {/* Order Filters */}
+
       <div className="flex flex-wrap gap-2 mt-4">
-        {/* "All" or "Clear Filters" Button */}
         <Button
           onClick={() => handleOrderClick("All")}
-          color={selectedOrders.length === 0 && !selectedClass ? "blue" : "red"}
-          className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
-            selectedOrders.length === 0 && !selectedClass
-              ? "hover:!bg-blue-600 hover:!text-white"
-              : "!bg-red-500 !text-white hover:!bg-red-400 hover:!text-white"
+          className={`px-4 py-2 rounded-lg ${
+            selectedOrders.length === 0
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "bg-red-500 text-white hover:bg-red-600"
           }`}
         >
-          {selectedOrders.length === 0 && !selectedClass ? (
+          {selectedOrders.length === 0 ? (
             "All"
           ) : (
             <div className="flex items-center">
@@ -115,27 +105,21 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
             </div>
           )}
         </Button>
-
-        {/* Individual Order Buttons */}
-        {orders.map((order) => (
+        {availableOrders.map((order) => (
           <Button
-            key={order._id}
-            onClick={() => handleOrderClick(order.name)}
-            color="light"
-            className={`!px-4 !py-2 !rounded-lg focus:none focus:ring-0 ${
-              selectedOrders.includes(order.name)
-                ? "!bg-blue-500 !text-white hover:!bg-blue-400 hover:!text-white"
-                : "!bg-white !text-blue-500 !border !border-blue-500 hover:!bg-blue-100 hover:!text-blue-700"
+            key={order}
+            onClick={() => handleOrderClick(order)}
+            className={`px-4 py-2 rounded-lg ${
+              selectedOrders.includes(order)
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-white text-blue-500 border border-blue-500 hover:bg-gray-100"
             }`}
           >
-            {order.name}
+            {order}
           </Button>
         ))}
       </div>
-    
-    </AccordionContent>
-    </AccordionPanel>
-    </Accordion>
+    </div>
   );
 };
 

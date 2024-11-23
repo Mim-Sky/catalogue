@@ -3,20 +3,21 @@ import { Insect } from "@/sanity/types/types";
 import Image from "next/image";
 
 interface InsectDetailsProps {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
 export async function generateStaticParams() {
-  const insects = await client.fetch<Insect[]>(
-    `*[_type == "insect"]{ slug }`
+  const insects = await client.fetch<{ slug: { current: string } }[]>(
+    `*[_type == "insect"]{ "slug": slug.current }`
   );
 
   return insects.map((insect) => ({
-    slug: insect.slug.current,
+    slug: insect.slug, // This is now slug.current
   }));
 }
+
 
 const InsectDetails = async ({ params }: InsectDetailsProps) => {
   const { slug } = await params;

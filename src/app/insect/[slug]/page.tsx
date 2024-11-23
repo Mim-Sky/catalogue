@@ -3,9 +3,9 @@ import { Insect } from "@/sanity/types/types";
 import Image from "next/image";
 
 interface InsectDetailsProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate static paths for dynamic routes
@@ -15,13 +15,14 @@ export async function generateStaticParams() {
   );
 
   return insects.map((insect) => ({
-    slug: insect.slug, // Correctly map the slug
+    slug: insect.slug,
   }));
 }
 
 // Dynamic Insect Details Page
 const InsectDetails = async ({ params }: InsectDetailsProps) => {
-  const { slug } = params;
+  // Await params to resolve the slug
+  const { slug } = await params;
 
   if (!slug) {
     return <div>Invalid route</div>;

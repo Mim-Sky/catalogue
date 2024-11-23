@@ -33,8 +33,9 @@ const Insects = () => {
       shortDescription,
       image,
       slug,
-      "class": class->name,
-      "order": order->name
+      "order": order->name,
+      "class": order->class->name
+      
     }`;
 
     return client.fetch<Insect[]>(query);

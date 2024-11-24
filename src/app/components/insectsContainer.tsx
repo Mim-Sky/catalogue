@@ -1,17 +1,16 @@
-'use client';
+'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import client, { urlFor } from '@/sanityClient';
 import Card from './ui/card';
 import { FilterDrawer } from './FilterDrawer';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { ChevronRight } from 'lucide-react'
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from 'lucide-react';
 import { Insect } from '@/sanity/types/types';
 
-// Fetch function for insects
 const fetchInsects = async (): Promise<Insect[]> => {
   const query = `*[_type == "insect"] | order(title asc) {
     _id,
@@ -27,22 +26,31 @@ const fetchInsects = async (): Promise<Insect[]> => {
     "order": order->name,
     "class": order->class->name
   }`;
-  const result = await client.fetch(query);
-  console.log('Fetched Data:', result);
-  return result;
+  return await client.fetch(query);
 };
 
 const Insects = () => {
-  const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
 
   const { data: insects = [], isLoading } = useQuery<Insect[]>({
     queryKey: ['insects'],
     queryFn: fetchInsects,
-    staleTime: 1000 * 60 * 60 * 24, // 24 hours
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
-    refetchOnWindowFocus: false, // Avoid refetching when switching tabs
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnWindowFocus: false,
   });
+
+  // Initialize from URL after mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const filterType = params.get('type') as 'order' | 'class';
+    const filterValue = params.get('value');
+    
+    if (filterType && filterValue) {
+      setActiveFilter({ type: filterType, value: filterValue });
+    }
+  }, []);
 
   const filteredInsects = useMemo(() => {
     if (!activeFilter) return insects;
@@ -53,8 +61,41 @@ const Insects = () => {
   const classes = useMemo(() => [...new Set(insects.map(insect => insect.class))], [insects]);
 
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
-    setActiveFilter(value ? { type, value } : null);
+    const params = new URLSearchParams(window.location.search);
+    
+    if (value === null) {
+      // Clear filter parameters
+      params.delete('type');
+      params.delete('value');
+      setActiveFilter(null);
+    } else {
+      // Set new filter parameters
+      params.set('type', type);
+      params.set('value', value);
+      setActiveFilter({ type, value });
+    }
+
+    // Update URL without reload
+    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   };
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const filterType = params.get('type') as 'order' | 'class';
+      const filterValue = params.get('value');
+      
+      if (filterType && filterValue) {
+        setActiveFilter({ type: filterType, value: filterValue });
+      } else {
+        setActiveFilter(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   return (
     <div className="flex h-screen">
@@ -125,4 +166,3 @@ const Insects = () => {
 };
 
 export default Insects;
-

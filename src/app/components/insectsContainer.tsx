@@ -1,155 +1,156 @@
 'use client';
 
-import { useEffect, useState, useMemo } from "react";
-import client, { urlFor } from "@/sanityClient";
-import Card from "./ui/card";
-import { Insect } from "@/sanity/types/types";
-import Filters from "./filters";
+import { useState, useEffect, useMemo } from 'react';
+import { useInsectsPaginated } from "../hooks/useInsects";
+import { useTaxonomies } from "../hooks/useTaxonomies";
+import Card from './ui/card';
+import { FilterDrawer } from './FilterDrawer';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { urlFor } from '@/sanityClient';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ChevronRight } from 'lucide-react';
+import { ImSpinner2 } from "react-icons/im";
+
 
 const Insects = () => {
-  const [allInsects, setAllInsects] = useState<Insect[]>([]); 
-  const [visibleInsects, setVisibleInsects] = useState<Insect[]>([]);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
-
-  const fetchInsects = async (
-    offset: number = 0,
-    limit: number = 20,
-    filterOrders: string[] = [],
-    filterClass: string | null = null
-  ): Promise<Insect[]> => {
-    const orderFilter = filterOrders.length
-      ? `&& order->name in [${filterOrders.map((o) => `"${o}"`).join(",")}]`
-      : "";
-    const classFilter = filterClass ? `&& class->name == "${filterClass}"` : "";
-    const range = `[${offset}...${offset + limit}]`;
-
-    const query = `*[_type == "insect" ${classFilter} ${orderFilter}] | order(title asc) ${range} {
-      _id,
-      title,
-      latinTitle,
-      shortDescription,
-      image,
-      slug,
-      "class": class->name,
-      "order": order->name
-    }`;
-
-    return client.fetch<Insect[]>(query);
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const classParam = params.get("class");
-    const ordersParam = params.get("orders");
-
-    setSelectedClass(classParam || null);
-    setSelectedOrders(ordersParam ? ordersParam.split(",") : []);
-
-    const fetchInitialData = async () => {
-      setLoading(true);
-      const initialData = await fetchInsects(0, 20);
-      setAllInsects(initialData); 
-      setVisibleInsects(initialData);
-      setHasMore(initialData.length === 20);
-      setLoading(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
+  
+    const {
+      insects,
+      isLoading: insectsLoading,
+      totalCount,
+      totalPages,
+      getPageInsects,
+    } = useInsectsPaginated(activeFilter);
+  
+    const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies(); // Access the `data` field
+    const orders = taxonomies?.orders || [];
+    const classes = taxonomies?.classes || [];
+  
+    useEffect(() => {
+      setCurrentPage(0);
+    }, [activeFilter]);
+  
+    useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const filterType = params.get('type') as 'order' | 'class';
+      const filterValue = params.get('value');
+      
+      if (filterType && filterValue) {
+        setActiveFilter({ type: filterType, value: filterValue });
+      }
+    }, []);
+  
+    const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
+      const params = new URLSearchParams(window.location.search);
+      
+      if (value === null) {
+        params.delete('type');
+        params.delete('value');
+        setActiveFilter(null);
+      } else {
+        params.set('type', type);
+        params.set('value', value);
+        setActiveFilter({ type, value });
+      }
+  
+      window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
     };
-
-    fetchInitialData();
-  }, []);
-
-  const handleFilterChange = async (orders: string[], cls: string | null) => {
-    setSelectedOrders(orders);
-    setSelectedClass(cls);
-
-    const params = new URLSearchParams();
-    if (cls) params.set("class", cls);
-    if (orders.length > 0) params.set("orders", orders.join(","));
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, "", newUrl);
-
-    const filteredData = allInsects.filter(
-      (insect) =>
-        (!cls || insect.class === cls) &&
-        (orders.length === 0 || orders.includes(insect.order))
-    );
-
-    setVisibleInsects(filteredData);
-
-    if (filteredData.length === 0) {
-      setLoading(true);
-      const additionalData = await fetchInsects(0, 20, orders, cls);
-      setAllInsects((prev) => [...prev, ...additionalData]);
-      setVisibleInsects((prev) => [...prev, ...additionalData]);
-      setLoading(false);
-    }
-  };
-
-  const handleShowMore = async () => {
-    if (!hasMore || loading) return;
-
-    setLoading(true);
-    const additionalData = await fetchInsects(allInsects.length, 20);
-    setAllInsects((prev) => [...prev, ...additionalData]);
-    setVisibleInsects((prev) => [...prev, ...additionalData]);
-    setHasMore(additionalData.length === 20);
-    setLoading(false);
-  };
-
-  const filteredInsects = useMemo(() => {
-    return visibleInsects.filter(
-      (insect) =>
-        (!selectedClass || insect.class === selectedClass) &&
-        (selectedOrders.length === 0 || selectedOrders.includes(insect.order))
-    );
-  }, [visibleInsects, selectedClass, selectedOrders]);
-
-  return (
-    <div className="max-w-screen-2xl mx-auto p-5 sm:p-10 md:p-16">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-        {/* Filters Column */}
-        
-          <Filters  onFilterChange={handleFilterChange} />
-        
-
-        {/* Cards Column */}
-        <div className="lg:col-span-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-            {loading ? (
-              <p>Loading...</p>
-            ) : (
-              filteredInsects.map((insect) => (
-                <Card
-                  key={insect._id}
-                  imageUrl={
-                    insect.image
-                      ? urlFor(insect.image).width(330).height(330).url()
-                      : "/zombie.webp"
-                  }
-                  title={insect.title}
-                  latinTitle={insect.latinTitle}
-                  shortDescription={insect.shortDescription}
-                  slug={insect.slug.current}
-                />
-              ))
-            )}
-          </div>
-
-          {/* Show More Button */}
-          {hasMore && !loading && (
-            <button
-              onClick={handleShowMore}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+  
+    const visibleInsects = useMemo(() => {
+        const insectsToDisplay = [];
+        for (let i = 0; i <= currentPage; i++) {
+            insectsToDisplay.push(...getPageInsects(i));
+        }
+        return insectsToDisplay;
+    }, [currentPage, getPageInsects]);
+  
+    return (
+      <div className="flex h-screen">
+        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <SheetTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="fixed left-4 top-4 z-10 lg:hidden"
+              aria-label="Open filters"
             >
-              Show More
-            </button>
-          )}
+              <ChevronRight className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-80">
+            <FilterDrawer 
+              orders={orders}
+              classes={classes}
+              onFilterChange={handleFilterChange}
+              activeFilter={activeFilter}
+              onClose={() => setIsDrawerOpen(false)}
+              isMobileDrawer={true}
+            />
+          </SheetContent>
+        </Sheet>
+  
+        <div className="hidden lg:block">
+          <FilterDrawer 
+            orders={orders}
+            classes={classes}
+            onFilterChange={handleFilterChange}
+            activeFilter={activeFilter}
+            onClose={() => {}}
+            isMobileDrawer={false}
+          />
         </div>
+        
+        <ScrollArea className="flex-1 p-6">
+          <h1 className="text-3xl font-bold mb-6">Discover insects & spiders</h1>
+          {activeFilter && (
+            <div className="mb-4">
+              <span className="font-semibold">Active Filter:</span> {activeFilter.type} - {activeFilter.value}
+              <span className="ml-4 text-gray-600">
+                {totalCount} {totalCount === 1 ? 'result' : 'results'}
+              </span>
+            </div>
+          )}
+          
+          {insectsLoading || taxonomiesLoading ? (
+            <div className='flex justify-center'>
+           <ImSpinner2 className='text-[#deecfa] animate-spin  w-8 h-8'/>
+           </div>
+          ) : (
+            <>
+            
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+             
+                {visibleInsects.map((insect) => (
+                  <Card
+                    key={insect._id}
+                    imageUrl={insect.image ? urlFor(insect.image).width(330).height(330).url() : '/zombie.webp'}
+                    title={insect.title}
+                    latinTitle={insect.latinTitle}
+                    shortDescription={insect.shortDescription}
+                    slug={insect.slug.current}
+                  />
+                ))}
+              </div>
+              
+              {currentPage < totalPages - 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Button
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    variant="outline"
+                  >
+                    Show More ({visibleInsects.length}/{totalCount})
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </ScrollArea>
       </div>
-    </div>
-  );
-};
-
-export default Insects;
+    );
+  };
+  
+  export default Insects;

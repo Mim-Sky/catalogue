@@ -1,40 +1,55 @@
-import Image from "next/image";
-import Link from "next/link";
+import { useMemo } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+
 
 interface CardProps {
-  imageUrl: string; 
-  title: string;
-  latinTitle: string;
-  shortDescription: string;
-  slug: string;
+  imageUrl: string
+  title: string
+  latinTitle: string
+  shortDescription: string
+  slug: string
 }
 
-const Card = ({ imageUrl, title, latinTitle, shortDescription, slug }: CardProps) => {
+const InsectCard: React.FC<CardProps> = ({
+  imageUrl,
+  title,
+  latinTitle,
+  shortDescription,
+  slug,
+}) => {
   return (
-    <div className="rounded overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 ease-in-out bg-glacialBlue/20">
-      <div className="relative">
-        <Link href={`/insect/${slug}`}>
-          <Image
-            src={imageUrl}
-            width={330}
-            height={330}
-            className="w-full object-cover brightness-90 hover:brightness-100 transition duration-300 ease-in-out"
-            alt={title}
-          />
-        </Link>
+    <Card className="overflow-hidden flex flex-col h-full">
+      <div className="relative h-48 w-full">
+        <Image
+          src={imageUrl}
+          alt={title}
+          layout="fill"
+          objectFit="cover"
+        />
       </div>
-      <div className="px-6 py-4">
-        <Link
-          href={`/insect/${slug}`}
-          className="font-semibold text-lg inline-block transition duration-500 ease-in-out"
-        >
-          <h1>{title}</h1>
-          <h3 className="font-light font-style: italic">{latinTitle}</h3>
-        </Link>
-        <p className="text-gray-500 text-sm">{shortDescription}</p>
-      </div>
-    </div>
-  );
-};
+      <CardContent className="flex flex-col justify-between p-4 flex-grow">
+        <div className="mb-2">
+          <h2 className="text-xl font-semibold mb-1">{title}</h2>
+          <h3 className="text-sm text-muted-foreground italic">{latinTitle}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground line-clamp-2">{shortDescription}</p>
+      </CardContent>
+      <CardFooter className="p-4">
+        <Button 
+          asChild
+          variant="outline"
+          className="w-full bg-white text-black focus:outline-none transition-all duration-300 ease-in-out">
+          <Link href={`/insect/${slug}`}>
+            Learn More
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
 
-export default Card;
+export default InsectCard
+

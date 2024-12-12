@@ -1,15 +1,14 @@
-import Image from "next/image";
-import Navbar from "./components/nav";
-import Card from "./components/ui/card";
-import Insects from "./components/insectsContainer";
-
+// page.tsx
+import { QueryProvider } from './providers/queryProvider';
+import Insects from './components/insectsContainer';
 
 export default function Home() {
   return (
-    <>
+    <QueryProvider>
       <div className="h-screen bg-slate-600"></div>
-      <div className="h-screen"><Insects /></div>
-    
-    </>
+      <div className="h-screen">
+        <Insects />
+      </div>
+    </QueryProvider>
   );
 }

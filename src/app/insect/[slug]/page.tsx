@@ -8,18 +8,22 @@ interface InsectDetailsProps {
   }>;
 }
 
+// Generate static paths for dynamic routes
 export async function generateStaticParams() {
-  const insects = await client.fetch<Insect[]>(
-    `*[_type == "insect"]{ slug }`
+  const insects = await client.fetch<{ slug: { current: string } }[]>(
+    `*[_type == "insect"]{ "slug": slug.current }`
   );
 
   return insects.map((insect) => ({
-    slug: insect.slug.current,
+    slug: insect.slug,
   }));
 }
 
+// Dynamic Insect Details Page
 const InsectDetails = async ({ params }: InsectDetailsProps) => {
+  // Await params to resolve the slug
   const { slug } = await params;
+
   if (!slug) {
     return <div>Invalid route</div>;
   }

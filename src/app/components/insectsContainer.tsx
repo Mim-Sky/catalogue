@@ -66,7 +66,6 @@ const Insects = () => {
             insectsToDisplay.push(...getPageInsects(i));
         }
         return insectsToDisplay;
-        []
     }, [currentPage, getPageInsects]);
   
     return (

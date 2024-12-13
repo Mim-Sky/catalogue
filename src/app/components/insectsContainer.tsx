@@ -12,7 +12,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ChevronRight } from 'lucide-react';
 import { ImSpinner2 } from "react-icons/im";
 
-
 const Insects = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -26,22 +25,34 @@ const Insects = () => {
       getPageInsects,
     } = useInsectsPaginated(activeFilter);
   
-    const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies(); // Access the `data` field
+    const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies();
     const orders = taxonomies?.orders || [];
     const classes = taxonomies?.classes || [];
   
     useEffect(() => {
       setCurrentPage(0);
     }, [activeFilter]);
-  
+
     useEffect(() => {
-      const params = new URLSearchParams(window.location.search);
-      const filterType = params.get('type') as 'order' | 'class';
-      const filterValue = params.get('value');
+      const handlePopState = () => {
+        const params = new URLSearchParams(window.location.search);
+        const filterType = params.get('type') as 'order' | 'class';
+        const filterValue = params.get('value');
+        
+        if (filterType && filterValue) {
+          setActiveFilter({ type: filterType, value: filterValue });
+        } else {
+          setActiveFilter(null);
+        }
+      };
+
+      window.addEventListener('popstate', handlePopState);
       
-      if (filterType && filterValue) {
-        setActiveFilter({ type: filterType, value: filterValue });
-      }
+      handlePopState();
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
     }, []);
   
     const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
@@ -117,13 +128,11 @@ const Insects = () => {
           
           {insectsLoading || taxonomiesLoading ? (
             <div className='flex justify-center'>
-           <ImSpinner2 className='text-[#deecfa] animate-spin  w-8 h-8'/>
-           </div>
+              <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+            </div>
           ) : (
             <>
-            
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-             
                 {visibleInsects.map((insect) => (
                   <Card
                     key={insect._id}
@@ -151,6 +160,6 @@ const Insects = () => {
         </ScrollArea>
       </div>
     );
-  };
+};
   
-  export default Insects;
+export default Insects;

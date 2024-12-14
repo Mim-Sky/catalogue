@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
@@ -69,8 +70,8 @@ export const useInsectsPaginated = (filter: FilterParams | null) => {
 export const useInsect = (slug: string) => {
   const queryClient = useQueryClient();
   
-  return useQuery({
-    queryKey: queryKeys.insect(slug),
+  return useQuery<Insect, Error>({
+    queryKey: ['insect', slug],
     queryFn: async () => {
       const query = `*[_type == "insect" && slug.current == $slug][0]{
         title,
@@ -84,9 +85,11 @@ export const useInsect = (slug: string) => {
       return client.fetch(query, { slug });
     },
     initialData: () => {
-      // Try to find the insect in the main cache
-      const cachedInsects = queryClient.getQueryData<Insect[]>(queryKeys.insects);
+      const cachedInsects = queryClient.getQueryData<Insect[]>(['insects']);
       return cachedInsects?.find(insect => insect.slug.current === slug);
     },
-  });
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    keepPreviousData: true, // ✅ TypeScript now recognizes this
+  } as UseQueryOptions<Insect, Error>); // <-- Explicitly cast UseQueryOptions here
 };

@@ -15,12 +15,10 @@ import { ImSpinner2 } from "react-icons/im";
 const Insects = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
-
   const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies();
   const orders = taxonomies?.orders || [];
   const classes = taxonomies?.classes || [];
 
-  // Use infiniteQuery-based hook
   const {
     data,
     isLoading: insectsLoading,
@@ -29,15 +27,10 @@ const Insects = () => {
     hasNextPage
   } = useInsectsInfinite(activeFilter);
 
-  // Flatten all pages
   const insects = data?.pages.flat() || [];
-  const totalCount = insects.length; // This is total currently loaded, not total in DB
-  // For total count of all results if needed, you could fetch a separate count query, 
-  // or store it differently. For now, totalCount represents loaded insects.
+  const totalCount = insects.length; 
 
   useEffect(() => {
-    // When filter changes, infiniteQuery resets automatically.
-    // No need to set a currentPage state anymore.
   }, [activeFilter]);
   useEffect(() => {
     console.log('Active Filter:', activeFilter);

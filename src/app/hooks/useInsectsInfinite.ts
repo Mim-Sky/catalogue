@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
-const ITEMS_PER_PAGE = 1;
+const ITEMS_PER_PAGE = 3;
 
 interface FilterParams {
   type: 'order' | 'class';
@@ -10,10 +10,13 @@ interface FilterParams {
 }
 
 export const queryKeys = {
-  insects: ['insects'],
-  insect: (slug: string) => ['insect', slug],
-  insectsInfinite: (filter: FilterParams | null) => ['insects-infinite', filter],
-};
+    insects: ['insects'],
+    insect: (slug: string) => ['insect', slug],
+    insectsInfinite: (filter: FilterParams | null) => 
+      filter 
+        ? ['insects-infinite', { type: filter.type, value: filter.value }] 
+        : ['insects-infinite', 'all'], 
+  };
 
 const fetchInsectsPage = async ({ pageParam = 0, filter }: { pageParam?: number; filter: FilterParams | null }) => {
   const start = pageParam * ITEMS_PER_PAGE;
@@ -43,13 +46,6 @@ const fetchInsectsPage = async ({ pageParam = 0, filter }: { pageParam?: number;
 
 export const useInsectsInfinite = (filter: FilterParams | null) => {
   const queryClient = useQueryClient();
-
-  // Define generics:
-  // TQueryFnData = Insect[]
-  // TError = Error
-  // TData = Insect[] (same as TQueryFnData here)
-  // TQueryKey = ["insects-infinite", FilterParams | null]
-  // TPageParam = number (since we use page numbers)
   return useInfiniteQuery({
     queryKey: queryKeys.insectsInfinite(filter),
     queryFn: ({ pageParam = 0 }) => fetchInsectsPage({ pageParam, filter }),
@@ -59,7 +55,5 @@ export const useInsectsInfinite = (filter: FilterParams | null) => {
       return allPages.length;
     },
     staleTime: 1000 * 60 * 60 * 24,
-    // Remove initialData entirely
   });
-  
 };

@@ -39,6 +39,9 @@ const Insects = () => {
     // When filter changes, infiniteQuery resets automatically.
     // No need to set a currentPage state anymore.
   }, [activeFilter]);
+  useEffect(() => {
+    console.log('Active Filter:', activeFilter);
+  }, [activeFilter]);
 
   useEffect(() => {
     const handlePopState = () => {

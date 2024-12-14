@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 1;
 
 interface FilterParams {
   type: 'order' | 'class';
@@ -20,7 +20,11 @@ const fetchInsectsPage = async ({ pageParam = 0, filter }: { pageParam?: number;
   let filterQuery = '';
 
   if (filter && filter.type && filter.value) {
-    filterQuery = `&& ${filter.type} == "${filter.value}"`;
+    if (filter.type === 'order') {
+      filterQuery = `&& order->name == "${filter.value.trim()}"`;
+    } else if (filter.type === 'class') {
+      filterQuery = `&& order->class->name == "${filter.value.trim()}"`; 
+    }
   }
 
   const query = `*[_type == "insect" ${filterQuery}] | order(title asc) [${start}...${start + ITEMS_PER_PAGE}] {
@@ -55,17 +59,7 @@ export const useInsectsInfinite = (filter: FilterParams | null) => {
       return allPages.length;
     },
     staleTime: 1000 * 60 * 60 * 24,
-    initialData: () => {
-        const cachedInsects = queryClient.getQueryData<Insect[]>(['insects']);
-        if (!cachedInsects || cachedInsects.length === 0) {
-          return undefined; // no initial data, trigger a fetch
-        }
-      const firstPage = cachedInsects.slice(0, ITEMS_PER_PAGE);
-      return {
-        pages: [firstPage],
-        pageParams: [0],
-      };
-    }
+    // Remove initialData entirely
   });
   
 };

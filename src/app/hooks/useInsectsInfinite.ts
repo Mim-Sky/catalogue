@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 20;
 
 interface FilterParams {
   type: 'order' | 'class';
@@ -54,6 +54,5 @@ export const useInsectsInfinite = (filter: FilterParams | null) => {
       if (lastPage.length < ITEMS_PER_PAGE) return undefined;
       return allPages.length;
     },
-    staleTime: 1000 * 60 * 60 * 24,
   });
 };

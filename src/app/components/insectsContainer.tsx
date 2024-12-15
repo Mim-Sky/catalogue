@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInsectsInfinite } from "../hooks/useInsectsInfinite"; // New Hook
+import { useInsectsInfinite } from "../hooks/useInsectsInfinite"; 
 import { useTaxonomies } from "../hooks/useTaxonomies";
 import Card from './ui/card';
 import { FilterDrawer } from './FilterDrawer';
@@ -15,6 +15,7 @@ import { ImSpinner2 } from "react-icons/im";
 const Insects = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
+
   const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies();
   const orders = taxonomies?.orders || [];
   const classes = taxonomies?.classes || [];
@@ -30,18 +31,13 @@ const Insects = () => {
   const insects = data?.pages.flat() || [];
   const totalCount = insects.length; 
 
-  useEffect(() => {
-  }, [activeFilter]);
-  useEffect(() => {
-    console.log('Active Filter:', activeFilter);
-  }, [activeFilter]);
-
+  // Handle URL changes (back/forward button)
   useEffect(() => {
     const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const filterType = params.get('type') as 'order' | 'class';
-      const filterValue = params.get('value');
-      
+      const pathParts = window.location.pathname.split('/').filter(Boolean); // remove empty parts
+      const filterType = pathParts[0] as 'order' | 'class';
+      const filterValue = pathParts[1];
+
       if (filterType && filterValue) {
         setActiveFilter({ type: filterType, value: filterValue });
       } else {
@@ -50,7 +46,6 @@ const Insects = () => {
     };
 
     window.addEventListener('popstate', handlePopState);
-    
     handlePopState();
 
     return () => {
@@ -58,20 +53,16 @@ const Insects = () => {
     };
   }, []);
 
+  // Update URL and filter state when the filter changes
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
-    const params = new URLSearchParams(window.location.search);
-    
     if (value === null) {
-      params.delete('type');
-      params.delete('value');
       setActiveFilter(null);
+      window.history.pushState({}, '', window.location.pathname);
     } else {
-      params.set('type', type);
-      params.set('value', value);
       setActiveFilter({ type, value });
+      const newUrl = `/${type}/${encodeURIComponent(value)}`;
+      window.history.pushState({}, '', newUrl);
     }
-
-    window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
   };
 
   return (

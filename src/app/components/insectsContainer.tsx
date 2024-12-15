@@ -8,7 +8,7 @@ import { FilterDrawer } from './FilterDrawer';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { urlFor } from '@/sanityClient';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { ChevronRight } from 'lucide-react';
 import { ImSpinner2 } from "react-icons/im";
 
@@ -75,7 +75,7 @@ const Insects = () => {
             aria-label="Open filters"
           >
             <ChevronRight className="h-4 w-4 mr-2" />
-            Filters
+            <SheetTitle>Filters</SheetTitle>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-80">

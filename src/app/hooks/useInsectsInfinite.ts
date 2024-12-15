@@ -54,6 +54,5 @@ export const useInsectsInfinite = (filter: FilterParams | null) => {
       if (lastPage.length < ITEMS_PER_PAGE) return undefined;
       return allPages.length;
     },
-    staleTime: 1000 * 60 * 60 * 24,
   });
 };

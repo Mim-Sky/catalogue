@@ -15,6 +15,5 @@ export const useTaxonomies = () => {
       orders: data.orders.map((order: { name: string }) => order.name),
       classes: data.classes.map((cls: { name: string }) => cls.name),
     }),
-    staleTime: 1000 * 60 * 60, // 1 hour
   });
 };

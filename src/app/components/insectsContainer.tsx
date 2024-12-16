@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useInsectsInfinite } from "../hooks/useInsectsInfinite"; 
 import { useTaxonomies } from "../hooks/useTaxonomies";
 import Card from './ui/card';
@@ -12,9 +12,12 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { ChevronRight } from 'lucide-react';
 import { ImSpinner2 } from "react-icons/im";
 
+const INTERSECTION_THRESHOLD = 1; // Trigger when 50% of the sentinel is visible
+
 const Insects = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const { data: taxonomies, isLoading: taxonomiesLoading } = useTaxonomies();
   const orders = taxonomies?.orders || [];
@@ -31,27 +34,53 @@ const Insects = () => {
   const insects = data?.pages.flat() || [];
   const totalCount = insects.length;
 
-  // Handle URL changes (back/forward button)
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const filterType = params.get('type') as 'order' | 'class';
-      const filterValue = params.get('value');
-
-      if (filterType && filterValue) {
-        setActiveFilter({ type: filterType, value: filterValue });
-      } else {
-        setActiveFilter(null);
+  // Intersection Observer setup for infinite scroll
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
       }
-    };
+    }, 
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: INTERSECTION_THRESHOLD,
+      root: null, // viewport
+      rootMargin: '100px',
+    });
+  
+    const currentRef = loadMoreRef.current; // Capture the ref at the time useEffect runs
+    if (currentRef) observer.observe(currentRef);
+  
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, [handleObserver]); // ✅ No more reference issues
+  
+
+  // Handle URL changes (back/forward button)
+  const handlePopState = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    const filterType = params.get('type') as 'order' | 'class';
+    const filterValue = params.get('value');
+  
+    if (filterType && filterValue) {
+      setActiveFilter({ type: filterType, value: filterValue });
+    } else {
+      setActiveFilter(null);
+    }
+  }, []);
+  
+  useEffect(() => {
     window.addEventListener('popstate', handlePopState);
     handlePopState();
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
+  
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [handlePopState]);
+  
 
   // Update URL and filter state when the filter changes
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
@@ -138,7 +167,10 @@ const Insects = () => {
             </div>
             
             {hasNextPage && (
-              <div className="mt-8 flex justify-center">
+              <div 
+                ref={loadMoreRef} 
+                className="mt-8 flex justify-center"
+              >
                 <Button
                   onClick={() => fetchNextPage()}
                   variant="outline"

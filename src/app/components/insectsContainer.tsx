@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { ChevronRight } from 'lucide-react';
 import { ImSpinner2 } from "react-icons/im";
 
-const INTERSECTION_THRESHOLD = 1; // Trigger when 50% of the sentinel is visible
+const INTERSECTION_THRESHOLD = 0.5; // Trigger when 50% of the sentinel is visible
 
 const Insects = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

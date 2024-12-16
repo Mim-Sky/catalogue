@@ -29,14 +29,14 @@ const Insects = () => {
   } = useInsectsInfinite(activeFilter);
 
   const insects = data?.pages.flat() || [];
-  const totalCount = insects.length; 
+  const totalCount = insects.length;
 
   // Handle URL changes (back/forward button)
   useEffect(() => {
     const handlePopState = () => {
-      const pathParts = window.location.pathname.split('/').filter(Boolean); // remove empty parts
-      const filterType = pathParts[0] as 'order' | 'class';
-      const filterValue = pathParts[1];
+      const params = new URLSearchParams(window.location.search);
+      const filterType = params.get('type') as 'order' | 'class';
+      const filterValue = params.get('value');
 
       if (filterType && filterValue) {
         setActiveFilter({ type: filterType, value: filterValue });
@@ -55,14 +55,20 @@ const Insects = () => {
 
   // Update URL and filter state when the filter changes
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
+    const params = new URLSearchParams(window.location.search);
+    
     if (value === null) {
+      params.delete('type');
+      params.delete('value');
       setActiveFilter(null);
-      window.history.pushState({}, '', window.location.pathname);
     } else {
+      params.set('type', type);
+      params.set('value', value);
       setActiveFilter({ type, value });
-      const newUrl = `/${type}/${encodeURIComponent(value)}`;
-      window.history.pushState({}, '', newUrl);
     }
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, '', newUrl);
   };
 
   return (

@@ -48,20 +48,18 @@ const Insects = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
       threshold: INTERSECTION_THRESHOLD,
-      root: null, // viewport
+      root: null, 
       rootMargin: '100px',
     });
   
-    const currentRef = loadMoreRef.current; // Capture the ref at the time useEffect runs
+    const currentRef = loadMoreRef.current;
     if (currentRef) observer.observe(currentRef);
   
     return () => {
       if (currentRef) observer.unobserve(currentRef);
     };
-  }, [handleObserver]); // ✅ No more reference issues
+  }, [handleObserver]); 
   
-
-  // Handle URL changes (back/forward button)
   const handlePopState = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
     const filterType = params.get('type') as 'order' | 'class';
@@ -81,8 +79,6 @@ const Insects = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [handlePopState]);
   
-
-  // Update URL and filter state when the filter changes
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
     const params = new URLSearchParams(window.location.search);
     
@@ -154,36 +150,32 @@ const Insects = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {insects.map((insect) => (
-                <Card
-                  key={insect._id}
-                  imageUrl={insect.image ? urlFor(insect.image).width(330).height(330).url() : '/zombie.webp'}
-                  title={insect.title}
-                  latinTitle={insect.latinTitle}
-                  shortDescription={insect.shortDescription}
-                  slug={insect.slug.current}
-                />
-              ))}
-            </div>
-            
-            {hasNextPage && (
-              <div 
-                ref={loadMoreRef} 
-                className="mt-8 flex justify-center"
-              >
-                <Button
-                  onClick={() => fetchNextPage()}
-                  variant="outline"
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? 'Loading more...' : `Show More (${totalCount}+ loaded)`}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </ScrollArea>
-    </div>
+  {insects.map((insect, index) => (
+    <Card
+      key={insect._id}
+      imageUrl={insect.image ? urlFor(insect.image).width(330).height(330).url() : '/zombie.webp'}
+      title={insect.title}
+      latinTitle={insect.latinTitle}
+      shortDescription={insect.shortDescription}
+      slug={insect.slug.current}
+    />
+  ))}
+</div>
+  <div 
+    ref={loadMoreRef} 
+    className="mt-8 flex justify-center"
+  >
+    {isFetchingNextPage && (
+      <div className='flex justify-center'>
+        <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+      </div>
+    )}
+  </div>
+
+            </>
+          )}
+        </ScrollArea>
+      </div>
   );
 };
 

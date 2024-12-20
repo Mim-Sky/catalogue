@@ -2,7 +2,9 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
+
 const ITEMS_PER_PAGE = 10;
+
 
 interface FilterParams {
   type: 'order' | 'class';

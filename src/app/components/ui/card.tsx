@@ -26,8 +26,9 @@ const InsectCard: React.FC<CardProps> = ({
         <Image
           src={imageUrl}
           alt={title}
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: 'cover' }}
+          priority
         />
       </div>
       <CardContent className="flex flex-col justify-between p-4 flex-grow">

@@ -41,14 +41,14 @@ const Insects = () => {
       if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
-    }, 
+    },
     [fetchNextPage, hasNextPage, isFetchingNextPage]
   );
 
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
       threshold: INTERSECTION_THRESHOLD,
-      root: null, 
+      root: null,
       rootMargin: '100px',
     });
   
@@ -58,27 +58,56 @@ const Insects = () => {
     return () => {
       if (currentRef) observer.unobserve(currentRef);
     };
-  }, [handleObserver]); 
-  
-  const handlePopState = useCallback(() => {
-    const params = new URLSearchParams(window.location.search);
-    const filterType = params.get('type') as 'order' | 'class';
-    const filterValue = params.get('value');
-  
-    if (filterType && filterValue) {
-      setActiveFilter({ type: filterType, value: filterValue });
-    } else {
-      setActiveFilter(null);
-    }
-  }, []);
-  
+  }, [handleObserver]);
+
+  // Save scroll position on scroll
   useEffect(() => {
+    const saveScrollPosition = () => {
+      window.history.replaceState(
+        { ...window.history.state, scrollPosition: window.scrollY },
+        ''
+      );
+    };
+
+    window.addEventListener('scroll', saveScrollPosition);
+    return () => window.removeEventListener('scroll', saveScrollPosition);
+  }, []);
+
+  // Restore scroll position and filters
+  useEffect(() => {
+    const { scrollPosition, activeFilter } = window.history.state || {};
+
+    if (scrollPosition !== undefined) {
+      const intervalId = setInterval(() => {
+        if (document.readyState === 'complete') {
+          window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+          clearInterval(intervalId);
+        }
+      }, 50);
+    }
+
+    if (activeFilter) {
+      setActiveFilter(activeFilter);
+    }
+
+    const handlePopState = () => {
+      const { scrollPosition, activeFilter } = window.history.state || {};
+
+      if (scrollPosition !== undefined) {
+        setTimeout(() => {
+          window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+        }, 200);
+      }
+
+      if (activeFilter) {
+        setActiveFilter(activeFilter);
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
-    handlePopState();
-  
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [handlePopState]);
-  
+  }, []);
+
   const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
     const params = new URLSearchParams(window.location.search);
     
@@ -93,15 +122,16 @@ const Insects = () => {
     }
 
     const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({}, '', newUrl);
+    window.history.pushState({ scrollPosition: window.scrollY, activeFilter }, '', newUrl);
   };
 
   return (
     <div className="flex h-screen">
+      {/* Filter Drawer */}
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
         <SheetTrigger asChild>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="fixed left-4 top-4 z-10 lg:hidden"
             aria-label="Open filters"
           >
@@ -120,7 +150,6 @@ const Insects = () => {
           />
         </SheetContent>
       </Sheet>
-
       <div className="hidden lg:block">
         <FilterDrawer 
           orders={orders}
@@ -131,8 +160,7 @@ const Insects = () => {
           isMobileDrawer={false}
         />
       </div>
-      
-      <ScrollArea className="flex-1 p-6">
+      <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6">Discover insects & spiders</h1>
         {activeFilter && (
           <div className="mb-4">
@@ -142,7 +170,7 @@ const Insects = () => {
             </span>
           </div>
         )}
-        
+
         {insectsLoading || taxonomiesLoading ? (
           <div className='flex justify-center'>
             <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
@@ -150,32 +178,28 @@ const Insects = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-  {insects.map((insect, index) => (
-    <Card
-      key={insect._id}
-      imageUrl={insect.image ? urlFor(insect.image).width(330).height(330).url() : '/zombie.webp'}
-      title={insect.title}
-      latinTitle={insect.latinTitle}
-      shortDescription={insect.shortDescription}
-      slug={insect.slug.current}
-    />
-  ))}
-</div>
-  <div 
-    ref={loadMoreRef} 
-    className="mt-8 flex justify-center"
-  >
-    {isFetchingNextPage && (
-      <div className='flex justify-center'>
-        <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+              {insects.map((insect) => (
+                <Card
+                  key={insect._id}
+                  imageUrl={insect.image ? urlFor(insect.image).width(330).height(330).url() : '/zombie.webp'}
+                  title={insect.title}
+                  latinTitle={insect.latinTitle}
+                  shortDescription={insect.shortDescription}
+                  slug={insect.slug.current}
+                />
+              ))}
+            </div>
+            <div ref={loadMoreRef} className="mt-8 flex justify-center">
+              {isFetchingNextPage && (
+                <div className='flex justify-center'>
+                  <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
-    )}
-  </div>
-
-            </>
-          )}
-        </ScrollArea>
-      </div>
+    </div>
   );
 };
 

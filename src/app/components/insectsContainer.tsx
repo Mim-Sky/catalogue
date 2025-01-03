@@ -5,14 +5,14 @@ import { useInsectsInfinite } from "../hooks/useInsectsInfinite";
 import { useTaxonomies } from "../hooks/useTaxonomies";
 import Card from './ui/card';
 import { FilterDrawer } from './FilterDrawer';
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { urlFor } from '@/sanityClient';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ChevronRight } from 'lucide-react';
 import { ImSpinner2 } from "react-icons/im";
+import { DialogTitle, DialogDescription } from '@radix-ui/react-dialog';
 
-const INTERSECTION_THRESHOLD = 0.5; // Trigger when 50% of the sentinel is visible
+const INTERSECTION_THRESHOLD = 0.5;
 
 const Insects = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -34,7 +34,53 @@ const Insects = () => {
   const insects = data?.pages.flat() || [];
   const totalCount = insects.length;
 
-  // Intersection Observer setup for infinite scroll
+  // Restore filter state from URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type') as 'order' | 'class';
+    const value = params.get('value');
+    if (type && value) {
+      setActiveFilter({ type, value });
+    }
+  }, []);
+
+  const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (value === null) {
+      params.delete('type');
+      params.delete('value');
+      setActiveFilter(null);
+    } else {
+      params.set('type', type);
+      params.set('value', value);
+      setActiveFilter({ type, value });
+    }
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({ scrollPosition: window.scrollY }, '', newUrl);
+  };
+
+  useEffect(() => {
+    const { scrollPosition } = window.history.state || {};
+
+    if (scrollPosition !== undefined) {
+      setTimeout(() => {
+        window.scrollTo({ top: scrollPosition, behavior: 'auto' });
+      }, 100);
+    }
+
+    const saveScrollPosition = () => {
+      window.history.replaceState(
+        { ...window.history.state, scrollPosition: window.scrollY },
+        ''
+      );
+    };
+
+    window.addEventListener('scroll', saveScrollPosition);
+    return () => window.removeEventListener('scroll', saveScrollPosition);
+  }, []);
+
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
@@ -51,95 +97,42 @@ const Insects = () => {
       root: null,
       rootMargin: '100px',
     });
-  
+
     const currentRef = loadMoreRef.current;
     if (currentRef) observer.observe(currentRef);
-  
+
     return () => {
       if (currentRef) observer.unobserve(currentRef);
     };
   }, [handleObserver]);
 
-  // Save scroll position on scroll
-  useEffect(() => {
-    const saveScrollPosition = () => {
-      window.history.replaceState(
-        { ...window.history.state, scrollPosition: window.scrollY },
-        ''
-      );
-    };
-
-    window.addEventListener('scroll', saveScrollPosition);
-    return () => window.removeEventListener('scroll', saveScrollPosition);
-  }, []);
-
-  // Restore scroll position and filters
-  useEffect(() => {
-    const { scrollPosition, activeFilter } = window.history.state || {};
-
-    if (scrollPosition !== undefined) {
-      const intervalId = setInterval(() => {
-        if (document.readyState === 'complete') {
-          window.scrollTo({ top: scrollPosition, behavior: 'auto' });
-          clearInterval(intervalId);
-        }
-      }, 50);
-    }
-
-    if (activeFilter) {
-      setActiveFilter(activeFilter);
-    }
-
-    const handlePopState = () => {
-      const { scrollPosition, activeFilter } = window.history.state || {};
-
-      if (scrollPosition !== undefined) {
-        setTimeout(() => {
-          window.scrollTo({ top: scrollPosition, behavior: 'auto' });
-        }, 200);
-      }
-
-      if (activeFilter) {
-        setActiveFilter(activeFilter);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const handleFilterChange = (type: 'order' | 'class', value: string | null) => {
-    const params = new URLSearchParams(window.location.search);
-    
-    if (value === null) {
-      params.delete('type');
-      params.delete('value');
-      setActiveFilter(null);
-    } else {
-      params.set('type', type);
-      params.set('value', value);
-      setActiveFilter({ type, value });
-    }
-
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({ scrollPosition: window.scrollY, activeFilter }, '', newUrl);
-  };
-
   return (
     <div className="flex h-screen">
       {/* Filter Drawer */}
-      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <Sheet open={isDrawerOpen} onOpenChange={(open) => {
+        setIsDrawerOpen(open);
+      }}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="fixed left-4 top-4 z-10 lg:hidden"
+            className="font-bold fixed left-0 top-1/2 transform -translate-y-1/2 z-10 lg:hidden flex items-center justify-center"
+            style={{
+              textOrientation: 'upright',
+              height: '150px',
+              borderRadius: '0 4px 4px 0',
+            }}
             aria-label="Open filters"
           >
-            <ChevronRight className="h-4 w-4 mr-2" />
-            <SheetTitle>Filters</SheetTitle>
+            FILTERS
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-80">
+          <DialogTitle>
+            <p className="text-lg font-bold p-4">Choose a filter</p>
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-600 flex p-4">
+            Use the options below to filter insects by order or class.
+          </DialogDescription>
           <FilterDrawer 
             orders={orders}
             classes={classes}
@@ -150,7 +143,14 @@ const Insects = () => {
           />
         </SheetContent>
       </Sheet>
-      <div className="hidden lg:block">
+      <div className='hidden lg:block'>
+      <Sheet>
+      <DialogTitle>
+            <p className="text-lg font-bold p-4 w-64">Choose a filter</p>
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-600 flex p-4 w-64">
+            Use the options below to filter insects by order or class.
+          </DialogDescription>
         <FilterDrawer 
           orders={orders}
           classes={classes}
@@ -159,6 +159,7 @@ const Insects = () => {
           onClose={() => {}}
           isMobileDrawer={false}
         />
+      </Sheet>
       </div>
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6">Discover insects & spiders</h1>
@@ -172,8 +173,8 @@ const Insects = () => {
         )}
 
         {insectsLoading || taxonomiesLoading ? (
-          <div className='flex justify-center'>
-            <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+          <div className="flex justify-center">
+            <ImSpinner2 className="text-[#deecfa] animate-spin w-8 h-8" />
           </div>
         ) : (
           <>
@@ -191,8 +192,8 @@ const Insects = () => {
             </div>
             <div ref={loadMoreRef} className="mt-8 flex justify-center">
               {isFetchingNextPage && (
-                <div className='flex justify-center'>
-                  <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+                <div className="flex justify-center">
+                  <ImSpinner2 className="text-[#deecfa] animate-spin w-8 h-8" />
                 </div>
               )}
             </div>

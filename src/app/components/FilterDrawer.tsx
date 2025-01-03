@@ -58,12 +58,7 @@ export function FilterDrawer({
 
   return (
     <div className="relative flex h-full">
-     
       <div className="w-64 h-full bg-background p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Filters</h2>
-          
-        </div>
         <div className="space-x-2 mb-4">
           <Button 
             variant={activeCategory === 'order' ? 'default' : 'outline'}
@@ -78,7 +73,7 @@ export function FilterDrawer({
             Class
           </Button>
         </div>
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="h-[calc(100vh-100px)] overflow-y-auto">
           {activeCategory === 'order' ? (
             <>
               <Button
@@ -120,7 +115,7 @@ export function FilterDrawer({
               ))}
             </>
           )}
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ const orderSchema = {
     fields: [
       { name: "name", title: "Name", type: "string" }, 
       { name: "latinName", title: "Latin", type: "string" },
+      { name: "orderScientificName", title: "Order scientific name", type: "string"} ,
       { name: "description", title: "Description", type: "text" },
       {
         name: "class",

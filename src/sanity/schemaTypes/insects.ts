@@ -10,6 +10,7 @@ const insectsSchema = {
       { name: "slug", title: "Slug", type: "slug", options: { source: "title" } },
       { name: "image", title: "Image", type: "image", options: { hotspot: true } },
       { name: "imageCredits", title: "Credits", type: "string" },
+      { name: "imageLicense", title: "License", type: "string" },
       {
         name: "class",
         title: "Class",

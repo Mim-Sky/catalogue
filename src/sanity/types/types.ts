@@ -1,17 +1,21 @@
 export interface Insect {
-  _id: string; // Unique identifier for each insect document
-  title: string; // Common name of the insect
-  latinTitle: string; // Scientific name
-  description: string; // Description of the insect
-  shortDescription: string; //short description
+  _id: string; 
+  title: string; 
+  latinTitle: string; 
+  description: string; 
+  shortDescription: string; 
+  orderScientificName: string;
   image: {
     asset: {
-      _ref: string; // Reference to the image asset in Sanity
+      _ref: string; 
     };
   };
   slug: {
     current: string;
   };
+  imageCredits: string;
+  imageLicens: string;
+
   order: string;  
   class: string;
 }

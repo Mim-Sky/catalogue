@@ -1,0 +1,14 @@
+{
+    "insect-1": {
+      "author": "John Doe",
+      "license": "CC BY-SA 4.0",
+      "licenseLink": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "changesMade": "Cropped and colour adjusted"
+    },
+    "insect-2": {
+      "author": "Jane Smith",
+      "license": "Public Domain",
+      "licenseLink": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "changesMade": "No changes"
+    }
+  }

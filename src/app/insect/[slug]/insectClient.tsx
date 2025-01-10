@@ -5,12 +5,25 @@ import client, { urlFor } from "@/sanityClient";
 import { Insect } from "@/sanity/types/types";
 import Image from "next/image";
 import { ImSpinner2 } from "react-icons/im";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft } from "lucide-react";
+import { useState, useEffect } from 'react';
 
 interface InsectClientProps {
   slug: string;
 }
 
 export default function InsectClient({ slug }: InsectClientProps) {
+  const [isTextVisible, setIsTextVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsTextVisible(true), 500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+
   const { data: insect, isLoading, isError } = useQuery({
     queryKey: ['insect', slug],
     queryFn: async () => {
@@ -18,18 +31,19 @@ export default function InsectClient({ slug }: InsectClientProps) {
         `*[_type == "insect" && slug.current == $slug][0]{
           title,
           description,
-          image
+          image,
+          latinTitle,
         }`,
         { slug }
       );
       return data;
-    }
+    },
   });
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <ImSpinner2 className='text-[#deecfa] animate-spin w-8 h-8'/>
+        <ImSpinner2 className="text-white animate-spin w-12 h-12" />
       </div>
     );
   }
@@ -37,41 +51,64 @@ export default function InsectClient({ slug }: InsectClientProps) {
   if (isError || !insect) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>404 - Insect Not Found</p>
+        <p className="text-white text-xl">404 - Specimen Not Found</p>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Hero Section */}
+    <div className="h-screen overflow-hidden text-black">
+      {/* Header Section */}
       <div
-        className="relative md:bg-fixed bg-center bg-cover h-96 md:h-[600px] before:absolute before:inset-0 before:bg-black before:opacity-40 mb-6 md:mb-12"
-        style={{
-          backgroundImage: `url(${urlFor(insect.image).url()})`,
-        }}
+        className={`flex items-center justify-around px-6 lg:px-12 pt-6 transform transition-all duration-700 ${
+          isTextVisible ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0"
+        }`}
       >
-        <h1 className="absolute top-3/4 md:top-1/2 bg-black/80 text-off-white text-3xl text-bold px-3 py-5">
+        <Button
+          variant="ghost"
+          onClick={() => window.history.back()}
+          className="bg-gray-300 hover:bg-gray-700 hover:text-white rounded-full w-12 h-12 p-0"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </Button>
+        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-center">
           {insect.title}
         </h1>
+        <h2 className='flex text-2xl lg:text-3xl italic tracking-tight text-center flex-wrap:wrap'>{insect.latinTitle}</h2>
       </div>
 
-      {/* Content Section */}
-      <div className="container w-full mx-auto flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:grid-rows-3 p-3 lg:p-0">
-        {/* Description */}
-        <div className="grid-element-2 bg-off-white p-6">
-          <p>{insect.description}</p>
+      {/* Content Grid */}
+      <div className="h-full lg:grid lg:grid-cols-2 lg:gap-8 p-6 lg:p-12">
+        {/* Left Column - Image */}
+        <div className="space-y-6">
+          <div className="h-[50vh] lg:h-[70vh] transform transition-all duration-700 rounded-lg overflow-hidden">
+            <div className="h-full transition-transform duration-75 ease-out">
+              <Image
+                src={urlFor(insect.image).url()}
+                alt={insect.title}
+                fill
+                className="object-cover scale-110 rounded-lg"
+                priority
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Image */}
-        <div className="grid-element-3 bg-earth-gray flex items-center justify-center">
-          <Image
-            src={urlFor(insect.image).url()}
-            alt={insect.title}
-            width={500}
-            height={500}
-            className="rounded shadow-lg"
-          />
+        {/* Right Column - Description */}
+        <div
+          className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
+            isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
+          }`}
+        >
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh]">
+            <ScrollArea className="h-full pr-3">
+              <div className="space-y-6 text-lg leading-relaxed">
+                {insect.description.split("\n").map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </div>
     </div>

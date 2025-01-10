@@ -1,4 +1,5 @@
 import { QueryProvider } from './providers/queryProvider';
+import { ReducedMotionProvider } from '../providers/reducedMotionProvider'; // Import the ReducedMotionProvider
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
@@ -25,8 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <QueryProvider>
-          
-          {children}
+          <ReducedMotionProvider>
+            {children}
+          </ReducedMotionProvider>
         </QueryProvider>
       </body>
     </html>

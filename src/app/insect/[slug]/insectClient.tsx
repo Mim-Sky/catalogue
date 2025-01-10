@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from 'react';
+import { useReducedMotion } from '@/providers/reducedMotionProvider';
 
 interface InsectClientProps {
   slug: string;
 }
 
 export default function InsectClient({ slug }: InsectClientProps) {
+  const isReducedMotion = useReducedMotion();
   const [isTextVisible, setIsTextVisible] = useState(false);
 
   useEffect(() => {
@@ -60,9 +62,11 @@ export default function InsectClient({ slug }: InsectClientProps) {
     <div className="h-screen overflow-hidden text-black">
       {/* Header Section */}
       <div
-        className={`flex items-center justify-around px-6 lg:px-12 pt-6 transform transition-all duration-700 ${
-          isTextVisible ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0"
-        }`}
+        className={`flex items-center justify-around px-6 lg:px-12 pt-6 ${
+          isReducedMotion
+            ? ""
+            : "transform transition-all duration-700"
+        } ${isTextVisible ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0"}`}
       >
         <Button
           variant="ghost"
@@ -96,9 +100,9 @@ export default function InsectClient({ slug }: InsectClientProps) {
 
         {/* Right Column - Description */}
         <div
-          className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
-            isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
-          }`}
+          className={`mt-6 lg:mt-0 ${
+            isReducedMotion ? "" : "transform transition-all duration-700 delay-200"
+          } ${isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"}`}
         >
           <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh]">
             <ScrollArea className="h-full pr-3">

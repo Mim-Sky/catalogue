@@ -81,14 +81,15 @@ export default function InsectClient({ slug }: InsectClientProps) {
       <div className="h-full lg:grid lg:grid-cols-2 lg:gap-8 p-6 lg:p-12">
         {/* Left Column - Image */}
         <div className="space-y-6">
-          <div className="h-[50vh] lg:h-[70vh] transform transition-all duration-700 rounded-lg overflow-hidden">
-            <div className="h-full transition-transform duration-75 ease-out">
+          <div className="flex justify-center items-center h-auto lg:h-[70vh] overflow-hidden rounded-lg transform transition-all duration-700">
+            <div className="relative w-full max-h-[70vh]">
               <Image
                 src={urlFor(insect.image).url()}
                 alt={insect.title}
-                fill
-                className="object-cover scale-110 rounded-lg"
+                className="object-contain rounded-lg"
                 priority
+                width={800}
+                height={800}
               />
             </div>
           </div>
@@ -96,41 +97,41 @@ export default function InsectClient({ slug }: InsectClientProps) {
 
         {/* Right Column - Description */}
         <div
-  className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
-    isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
-  }`}
->
-  <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh]">
-    <ScrollArea className="h-full pr-3">
-      <div className="space-y-6 text-lg leading-relaxed break-words max-w-full">
-        {insect.description.split("\n").map((paragraph, index) => {
-          const creditsRegex = /Photo Credits: (.+?), licensed under (.+?). Source: (.+)$/;
-          const match = paragraph.match(creditsRegex);
+          className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
+            isTextVisible ? "translate-x-0 opacity-100" : "flex justify-center items-center translate-x-10 opacity-0"
+          }`}
+        >
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh] flex items-center"> {/* Added flex and items-center */}
+            <ScrollArea className="h-full pr-3">
+              <div className="space-y-6 text-lg leading-relaxed break-words max-w-full">
+                {insect.description.split("\n").map((paragraph, index) => {
+                  const creditsRegex = /Photo Credits: (.+?), licensed under (.+?). Source: (.+)$/;
+                  const match = paragraph.match(creditsRegex);
 
-          if (match) {
-            const [, author, license, source] = match;
-            return (
-              <p key={index} className="italic text-gray-600">
-                Photo Credits:{" "}
-                <span className="font-semibold">{author}</span>, licensed under{" "}
-                <span className="underline">{license}</span>.{" "}
-                <a
-                  href={source}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 underline"
-                >
-                  Source
-                </a>
-              </p>
-            );
-          }
-          return <p key={index}>{paragraph}</p>;
-        })}
-      </div>
-        </ScrollArea>
-      </div>
-    </div>
+                  if (match) {
+                    const [, author, license, source] = match;
+                    return (
+                      <p key={index} className="italic text-gray-600">
+                        Photo Credits:{" "}
+                        <span className="font-semibold">{author}</span>, licensed under{" "}
+                        <span className="underline">{license}</span>.{" "}
+                        <a
+                          href={source}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          Source
+                        </a>
+                      </p>
+                    );
+                  }
+                  return <p key={index}>{paragraph}</p>;
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
       </div>
     </div>
   );

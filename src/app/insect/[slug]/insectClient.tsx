@@ -96,20 +96,41 @@ export default function InsectClient({ slug }: InsectClientProps) {
 
         {/* Right Column - Description */}
         <div
-          className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
-            isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
-          }`}
-        >
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh]">
-            <ScrollArea className="h-full pr-3">
-              <div className="space-y-6 text-lg leading-relaxed">
-                {insect.description.split("\n").map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
+  className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
+    isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
+  }`}
+>
+  <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 h-[50vh] lg:h-[70vh]">
+    <ScrollArea className="h-full pr-3">
+      <div className="space-y-6 text-lg leading-relaxed break-words max-w-full">
+        {insect.description.split("\n").map((paragraph, index) => {
+          const creditsRegex = /Photo Credits: (.+?), licensed under (.+?). Source: (.+)$/;
+          const match = paragraph.match(creditsRegex);
+
+          if (match) {
+            const [, author, license, source] = match;
+            return (
+              <p key={index} className="italic text-gray-600">
+                Photo Credits:{" "}
+                <span className="font-semibold">{author}</span>, licensed under{" "}
+                <span className="underline">{license}</span>.{" "}
+                <a
+                  href={source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  Source
+                </a>
+              </p>
+            );
+          }
+          return <p key={index}>{paragraph}</p>;
+        })}
+      </div>
+        </ScrollArea>
+      </div>
+    </div>
       </div>
     </div>
   );

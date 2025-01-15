@@ -5,9 +5,9 @@ import { ReactNode } from 'react';
 
 const defaultOptions: DefaultOptions = {
   queries: {
-    staleTime: 1000 * 60 * 60 * 12, // 12 hours
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours (was previously cacheTime)
-    refetchOnWindowFocus: false, // Do not refetch on window focus
+    staleTime: 1000 * 60 * 60 * 12, 
+    gcTime: 1000 * 60 * 60 * 24, 
+    refetchOnWindowFocus: false, 
   },
 };
 

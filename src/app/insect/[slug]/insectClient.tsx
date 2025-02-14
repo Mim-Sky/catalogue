@@ -67,7 +67,7 @@ export default function InsectClient({ slug }: InsectClientProps) {
         <Button
           variant="ghost"
           onClick={() => window.history.back()}
-          className="bg-gray-300 hover:bg-gray-700 hover:text-white rounded-full w-12 h-12 p-0"
+          className="bg-gray-300 hover:bg-gray-700 hover:text-white rounded-full w-12 h-12 p-0 hidden md:flex"
         >
           <ArrowLeft className="w-6 h-6" />
         </Button>

@@ -76,23 +76,21 @@ export default function InsectClient({ slug }: InsectClientProps) {
         </h1>
         <h2 className="text-2xl lg:text-3xl italic tracking-tight text-center">{insect.latinTitle}</h2>
       </div>
-
       {/* Content Grid */}
       <div className="h-full lg:grid lg:grid-cols-2 lg:gap-8 p-6 lg:p-12">
         {/* Left Column - Image */}
         <div className="space-y-6">
-          <div className="relative w-full aspect-[4/3] rounded-lg ">
+          <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-300">
             <Image
               src={urlFor(insect.image).url()}
               alt={insect.title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-              className="object-contain rounded-lg"
+              className="object-cover rounded-lg"
               priority
             />
           </div>
         </div>
-
         {/* Right Column - Description */}
         <div
           className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${

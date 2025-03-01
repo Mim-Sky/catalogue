@@ -5,7 +5,7 @@ interface InsectFilterStore {
   setIsDrawerOpen: (open: boolean) => void;
 }
 
-export const useInsectFilter = create<InsectFilterStore>((set: (arg0: { isDrawerOpen: any; }) => any) => ({
+export const useInsectFilter = create<InsectFilterStore>((set) => ({
   isDrawerOpen: false,
-  setIsDrawerOpen: (open: any) => set({ isDrawerOpen: open }),
+  setIsDrawerOpen: (open: boolean) => set({ isDrawerOpen: open }),
 }));

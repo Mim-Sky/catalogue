@@ -5,17 +5,16 @@ import { useInsectsInfinite } from "../hooks/useInsectsInfinite";
 import { useTaxonomies } from "../hooks/useTaxonomies";
 import Card from './ui/card';
 import { FilterDrawer } from './FilterDrawer';
-import { Button } from "@/components/ui/button";
 import { urlFor } from '@/sanityClient';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ChevronRight } from 'lucide-react';
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ImSpinner2 } from "react-icons/im";
-import { DialogTitle, DialogDescription } from '@radix-ui/react-dialog';
+import { DialogTitle, DialogDescription, Dialog } from '@radix-ui/react-dialog';
+import { useInsectFilter } from '../hooks/useInsectFilter';
 
 const INTERSECTION_THRESHOLD = 0.5;
 
 const Insects = () => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, setIsDrawerOpen } = useInsectFilter();
   const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +33,7 @@ const Insects = () => {
   const insects = data?.pages.flat() || [];
   const totalCount = insects.length;
 
-  // Restore filter state from URL parameters
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('type') as 'order' | 'class';
@@ -107,25 +106,9 @@ const Insects = () => {
   }, [handleObserver]);
 
   return (
+    
     <div className="flex h-screen">
-      {/* Filter Drawer */}
-      <Sheet open={isDrawerOpen} onOpenChange={(open) => {
-        setIsDrawerOpen(open);
-      }}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            className="font-bold fixed left-0 top-1/2 transform -translate-y-1/2 z-10 lg:hidden flex items-center justify-center"
-            style={{
-              textOrientation: 'upright',
-              height: '150px',
-              borderRadius: '0 4px 4px 0',
-            }}
-            aria-label="Open filters"
-          >
-            FILTERS
-          </Button>
-        </SheetTrigger>
+       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
         <SheetContent side="left" className="p-0 w-80">
           <DialogTitle>
             <p className="text-lg font-bold p-4">Choose a filter</p>
@@ -143,23 +126,25 @@ const Insects = () => {
           />
         </SheetContent>
       </Sheet>
-      <div className='hidden lg:block'>
-      <Sheet>
-      <DialogTitle>
+      <div className='hidden md:block'>
+        <Sheet>
+          <Dialog>
+          <DialogTitle>
             <p className="text-lg font-bold p-4 w-64">Choose a filter</p>
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-600 flex p-4 w-64">
             Use the options below to filter insects by order or class.
           </DialogDescription>
-        <FilterDrawer 
-          orders={orders}
-          classes={classes}
-          onFilterChange={handleFilterChange}
-          activeFilter={activeFilter}
-          onClose={() => {}}
-          isMobileDrawer={false}
-        />
-      </Sheet>
+          </Dialog>
+          <FilterDrawer 
+            orders={orders}
+            classes={classes}
+            onFilterChange={handleFilterChange}
+            activeFilter={activeFilter}
+            onClose={() => {}}
+            isMobileDrawer={false}
+          />
+        </Sheet>
       </div>
       <div className="flex-1 p-6">
         <h1 className="text-3xl font-bold mb-6">Discover insects & spiders</h1>
@@ -178,7 +163,7 @@ const Insects = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div id="insects-section" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {insects.map((insect) => (
                 <Card
                   key={insect._id}
@@ -201,6 +186,7 @@ const Insects = () => {
         )}
       </div>
     </div>
+    
   );
 };
 

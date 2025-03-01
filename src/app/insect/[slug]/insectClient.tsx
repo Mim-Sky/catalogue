@@ -58,7 +58,6 @@ export default function InsectClient({ slug }: InsectClientProps) {
 
   return (
     <div className="h-screen overflow-hidden text-black">
-      {/* Header Section */}
       <div
         className={`flex items-center justify-around px-6 lg:px-12 pt-6 transform transition-all duration-700 ${
           isTextVisible ? "translate-y-0 opacity-100" : "-translate-y-10 opacity-0"
@@ -76,9 +75,7 @@ export default function InsectClient({ slug }: InsectClientProps) {
         </h1>
         <h2 className="text-2xl lg:text-3xl italic tracking-tight text-center">{insect.latinTitle}</h2>
       </div>
-      {/* Content Grid */}
       <div className="h-full lg:grid lg:grid-cols-2 lg:gap-8 p-6 lg:p-12">
-        {/* Left Column - Image */}
         <div className="space-y-6">
           <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-300">
             <Image
@@ -91,7 +88,6 @@ export default function InsectClient({ slug }: InsectClientProps) {
             />
           </div>
         </div>
-        {/* Right Column - Description */}
         <div
           className={`mt-6 lg:mt-0 transform transition-all duration-700 delay-200 ${
             isTextVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"

@@ -15,9 +15,9 @@ const Navbar = () => {
     const openHandler = () => setIsOpen(!isOpen);
 
     const [color, setColor] = useState('transparent');
-    const [desktopTextColor, setDesktopTextColor] = useState('white'); // Desktop link colors
-    const [navbarTextColor, setNavbarTextColor] = useState('white'); // Navbar icons & links (not mobile menu)
-    const mobileIconColor = isOpen ? 'white' : navbarTextColor; // Ensure white icons when menu is open
+    const [desktopTextColor, setDesktopTextColor] = useState('white');
+    const [navbarTextColor, setNavbarTextColor] = useState('white');
+    const mobileIconColor = isOpen ? 'white' : navbarTextColor;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -28,13 +28,13 @@ const Navbar = () => {
             }
 
             if (window.scrollY >= 90) {
-                setColor('#ffffff'); // Navbar background becomes white
-                setDesktopTextColor('#000000'); // Desktop links turn black
-                setNavbarTextColor('#000000'); // Mobile icons turn black
+                setColor('#ffffff');
+                setDesktopTextColor('#000000');
+                setNavbarTextColor('#000000');
             } else {
-                setColor('transparent'); // Default state
-                setDesktopTextColor('white'); // Desktop links stay white
-                setNavbarTextColor('white'); // Mobile icons stay white
+                setColor('transparent');
+                setDesktopTextColor('white');
+                setNavbarTextColor('white');
             }
         };
 
@@ -47,7 +47,6 @@ const Navbar = () => {
     return (
         <div style={{ backgroundColor: color }} className="fixed top-0 left-0 w-full ease-in duration-300 z-50">
             <div className="max-w-[1280px] m-auto flex justify-between items-center p-4">
-                {/* Desktop Links (Only these change color on scroll) */}
                 <ul className="hidden md:flex gap-8" style={{ color: desktopTextColor }}>
                     {LINKS.map(link => (
                         <li key={link.id}>
@@ -77,7 +76,6 @@ const Navbar = () => {
                         
                     )}
                 </div>
-                {/* Mobile Menu (Force White Text & Icons) */}
                 <div className={
                     isOpen 
                         ? 'sm:hidden absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center w-full h-screen bg-black/60 backdrop-blur-xl ease-in duration-300 text-white'

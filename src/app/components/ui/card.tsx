@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 
-
 interface CardProps {
   imageUrl: string
   title: string

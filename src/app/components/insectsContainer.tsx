@@ -9,12 +9,12 @@ import { urlFor } from '@/sanityClient';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ImSpinner2 } from "react-icons/im";
 import { DialogTitle, DialogDescription, Dialog } from '@radix-ui/react-dialog';
-import { useInsectFilter } from '../hooks/useInsectFilter'; // New hook we'll create
+import { useInsectFilter } from '../hooks/useInsectFilter';
 
 const INTERSECTION_THRESHOLD = 0.5;
 
 const Insects = () => {
-  const { isDrawerOpen, setIsDrawerOpen } = useInsectFilter(); // Use the shared state
+  const { isDrawerOpen, setIsDrawerOpen } = useInsectFilter();
   const [activeFilter, setActiveFilter] = useState<{ type: 'order' | 'class', value: string } | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 

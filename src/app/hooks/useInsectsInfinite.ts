@@ -2,15 +2,12 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/sanityClient';
 import { Insect } from '@/sanity/types/types';
 
-
 const ITEMS_PER_PAGE = 10;
-
 
 interface FilterParams {
   type: 'order' | 'class';
   value: string;
 }
-
 export const queryKeys = {
     insects: ['insects'],
     insect: (slug: string) => ['insect', slug],
@@ -19,7 +16,6 @@ export const queryKeys = {
         ? ['insects-infinite', { type: filter.type, value: filter.value }] 
         : ['insects-infinite', 'all'], 
   };
-
 const fetchInsectsPage = async ({ pageParam = 0, filter }: { pageParam?: number; filter: FilterParams | null }) => {
   const start = pageParam * ITEMS_PER_PAGE;
   let filterQuery = '';
